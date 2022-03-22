@@ -17,6 +17,7 @@ inline void bit_lock_acquire(uint64_t *addr, uint64_t num){
         //spinlock
     }
 }
+
 inline void bit_lock_release(uint64_t *addr, uint64_t num){
     FETCH_AND_unSET_BIT(addr, num);
 }
