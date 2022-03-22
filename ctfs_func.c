@@ -851,6 +851,14 @@ int ctfs_fcntl(int fd, int cmd, ...){
 		va_start(ap, cmd);
 		ct_rt.fd[fd].flags = va_arg(ap, int);
 		return 0;
+
+	case F_SETLK:	// TODO: Implement
+		break;
+	case F_SETLKW: 	// TODO: Implement
+		break;
+	case F_GETLK:	// TODO: Implement
+		break;
+
 	default:
 		return 0;
 		break;
