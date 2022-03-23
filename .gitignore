@@ -1,1 +1,4 @@
 ctFS.code-workspace
+*.a
+*.o
+*.so
