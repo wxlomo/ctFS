@@ -2381,16 +2381,16 @@ extern int fstatfs64 (int __fildes, struct statfs64 *__buf)
 # 35 "/usr/include/x86_64-linux-gnu/bits/fcntl.h" 3 4
 struct flock
   {
-    short int l_type;
-    short int l_whence;
+    short int l_type;   // Type of lock: F_RDLCK, F_WRLCK, F_UNLCK
+    short int l_whence; // How to interpret l_start: SEEK_SET, SEEK_CUR, SEEK_END
 
-    __off_t l_start;
-    __off_t l_len;
-
-
+    __off_t l_start;    // Starting offset for lock
+    __off_t l_len;      // Number of bytes to lock
 
 
-    __pid_t l_pid;
+
+
+    __pid_t l_pid;      // PID of process blocking our lock (set by F_GETLK and F_OFD_GETLK)
   };
 
 
@@ -42666,7 +42666,7 @@ void avx_cpyt(void *dest, void *src, size_t size);
 typedef uint64_t index_t;
 typedef uint64_t relptr_t;
 typedef int8_t pgg_level_t;
-# 70 "./ctfs_type.h"
+# 81 "./ctfs_type.h"
 struct ct_inode{
 
     ino_t i_number;

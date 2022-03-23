@@ -66,20 +66,31 @@ typedef int8_t pgg_level_t;
 
 /* inode. No need for block map
  * 128B. Provides same functionality as ext4
+
+ * The following mask values are defined for the file type:
+
+    S_IFMT     0170000   bit mask for the file type bit field
+    S_IFSOCK   0140000   socket
+    S_IFLNK    0120000   symbolic link
+    S_IFREG    0100000   regular file
+    S_IFBLK    0060000   block device
+    S_IFDIR    0040000   directory
+    S_IFCHR    0020000   character device
+    S_IFIFO    0010000   FIFO
  */
 struct ct_inode{
 	// 64-bit fields
     ino_t       i_number;
-    size_t      i_size;
-    relptr_t    i_block;
+    size_t      i_size;         // the size of the file
+    relptr_t    i_block;        // the number of blocks allocated to the file
 	size_t		i_ndirent;      // indicate the size of inode table
-    nlink_t     i_nlink;
+    nlink_t     i_nlink;        // number of hard links to the file
 
 	// 32-bit fields
 	uint32_t	i_lock;
-    uid_t       i_uid;
-    gid_t       i_gid;
-    mode_t      i_mode;
+    uid_t       i_uid;          // user ID of the owner of the file
+    gid_t       i_gid;          // ID of the group owner of the file
+    mode_t      i_mode;         // file type and mode
 	// 16-bit fields
     pgg_level_t i_level;
     char        i_finish_swap;
