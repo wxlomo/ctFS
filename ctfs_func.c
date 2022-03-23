@@ -113,6 +113,22 @@ int ctfs_init(int flag){
 	return 0;
 }
 
+
+/*
+The open() system call opens the file specified by pathname.  If
+the specified file does not exist, it may optionally (if O_CREAT
+is specified in flags) be created by open().
+
+The return value of open() is a file descriptor, a small,
+nonnegative integer that is an index to an entry in the process's
+table of open file descriptors.  The file descriptor is used in
+subsequent system calls (read(2), write(2), lseek(2), fcntl(2),
+etc.) to refer to the open file.  The file descriptor returned by
+a successful call will be the lowest-numbered file descriptor not
+currently open for the process.
+
+For more detail https://man7.org/linux/man-pages/man2/open.2.html
+*/
 int ctfs_open (const char *pathname, int flags, ...){
 	int fd, res;
 	ct_inode_pt c;
@@ -123,6 +139,7 @@ int ctfs_open (const char *pathname, int flags, ...){
 	printf("****opening %s ******\n", pathname);
 #endif
 	dax_grant_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
+
 	if(flags & O_CREAT){
 		frame.flag |= CT_INODE_FRAME_CREATE;
 	}
@@ -177,6 +194,35 @@ int ctfs_open (const char *pathname, int flags, ...){
 	return fd;
 }
 
+
+/*
+The openat() system call operates in exactly the same way as
+open(), except for the differences described here.
+
+The dirfd argument is used in conjunction with the pathname
+argument as follows:
+
+*  If the pathname given in pathname is absolute, then dirfd is
+    ignored.
+
+*  If the pathname given in pathname is relative and dirfd is the
+    special value AT_FDCWD, then pathname is interpreted relative
+    to the current working directory of the calling process (like
+    open()).
+
+*  If the pathname given in pathname is relative, then it is
+    interpreted relative to the directory referred to by the file
+    descriptor dirfd (rather than relative to the current working
+    directory of the calling process, as is done by open() for a
+    relative pathname).  In this case, dirfd must be a directory
+    that was opened for reading (O_RDONLY) or using the O_PATH
+    flag.
+
+If the pathname given in pathname is relative, and dirfd is not a
+valid file descriptor, an error (EBADF) results.  (Specifying an
+invalid file descriptor number in dirfd can be used as a means to
+ensure that pathname is absolute.)
+*/
 int ctfs_openat (int dirfd, const char *pathname, int flags, ...){
 	int fd, res;
 	ct_inode_pt c;
@@ -243,6 +289,10 @@ int ctfs_openat (int dirfd, const char *pathname, int flags, ...){
 	return 0;
 }
 
+
+/*
+
+*/
 int ctfs_close(int fd){
 	if(fd >= CT_MAX_FD || ct_rt.fd[fd].inode == NULL){
 		ct_rt.errorn = EBADF;
@@ -255,6 +305,19 @@ int ctfs_close(int fd){
 	return 0;
 }
 
+
+/*
+pread() reads up to count bytes from file descriptor fd at offset
+offset (from the start of the file) into the buffer starting at
+buf. The file offset is not changed.
+
+The pread() and pwrite() system calls are especially useful in
+multithreaded applications.  They allow multiple threads to
+perform I/O on the same file descriptor without being affected by
+changes to the file offset by other threads.
+
+For more details: https://man7.org/linux/man-pages/man2/pread.2.html
+*/
 ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	if(fd >= CT_MAX_FD || ct_rt.fd[fd].inode == NULL){
 		ct_rt.errorn = EBADF;
@@ -296,7 +359,20 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	return count;
 }
 
+/*
+pwrite() writes up to count bytes from the buffer starting at buf
+to the file descriptor fd at offset offset.  The file offset is
+not changed.
 
+The file referenced by fd must be capable of seeking.
+
+The pread() and pwrite() system calls are especially useful in
+multithreaded applications.  They allow multiple threads to
+perform I/O on the same file descriptor without being affected by
+changes to the file offset by other threads.
+
+For more details: https://man7.org/linux/man-pages/man2/pwrite.2.html
+*/
 static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count, off_t offset){
 	if(unlikely(fd >= CT_MAX_FD || ct_rt.fd[fd].inode == NULL)){
 		ct_rt.errorn = EBADF;
@@ -783,6 +859,31 @@ int ctfs_closedir(DIR *dirp){
 	return ctfs_close((int)(uint64_t)dirp);
 }
 
+
+/*
+lseek() repositions the file offset of the open file description
+associated with the file descriptor fd to the argument offset
+according to the directive whence as follows:
+
+SEEK_SET
+    The file offset is set to offset bytes.
+
+SEEK_CUR
+    The file offset is set to its current location plus offset
+    bytes.
+
+SEEK_END
+    The file offset is set to the size of the file plus offset
+    bytes.
+
+lseek() allows the file offset to be set beyond the end of the
+file (but this does not change the size of the file).  If data is
+later written at this point, subsequent reads of the data in the
+gap (a "hole") return null bytes ('\0') until data is actually
+written into the gap.
+
+For more detail: https://man7.org/linux/man-pages/man2/lseek.2.html
+*/
 int  ctfs_lseek(int fd, int offset, int whence){
 	if(fd >= CT_MAX_FD || ct_rt.fd[fd].inode == NULL){
 		ct_rt.errorn = EBADF;
@@ -834,6 +935,26 @@ int  ctfs_access(const char * pathname, int mode){
 	return 0;
 }
 
+/*
+fcntl() performs one of the operations described below on the
+open file descriptor fd.  The operation is determined by cmd.
+
+fcntl() can take an optional third argument.  Whether or not this
+argument is required is determined by cmd.  The required argument
+type is indicated in parentheses after each cmd name (in most
+cases, the required type is int, and we identify the argument
+using the name arg), or void is specified if the argument is not
+required.
+
+Certain of the operations below are supported only since a
+particular Linux kernel version.  The preferred method of
+checking whether the host kernel supports a particular operation
+is to invoke fcntl() with the desired cmd value and then test
+whether the call failed with EINVAL, indicating that the kernel
+does not recognize this value.
+
+For more detail: https://man7.org/linux/man-pages/man2/fcntl.2.html
+*/
 int ctfs_fcntl(int fd, int cmd, ...){
 	va_list ap;
 	if(fd >= CT_MAX_FD || ct_rt.fd[fd].inode == NULL){
@@ -842,12 +963,14 @@ int ctfs_fcntl(int fd, int cmd, ...){
 	}
 	switch (cmd)
 	{
+	//Return (as the function result) the file access mode and
+	//the file status flags; arg is ignored.
 	case F_GETFL:
 		// printf("the flags are: %x\n", ct_rt.fd[fd].flags);
 		return ct_rt.fd[fd].flags;
 		break;
-	case F_SETFL:
-		
+	//Set the file status flags to the value specified by arg.
+	case F_SETFL:		
 		va_start(ap, cmd);
 		ct_rt.fd[fd].flags = va_arg(ap, int);
 		return 0;
