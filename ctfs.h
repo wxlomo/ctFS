@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-
 #define CTFS_MKFS_FLAG_RESET_DAX        0x01
 
 #define CTFS_O_ATOMIC					010

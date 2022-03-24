@@ -19,7 +19,7 @@ __sync_fetch_and_or((char*) (((uint64_t)addr)+(num/8)),      \
 __sync_and_and_fetch((char*) (((uint64_t)addr)+(num/8)),      \
 ~((char)0x01 << (num%8))) 
 
-// TODO: defince samephore macro here, maybe use "__sync_fetch_and_add"
+// TODO: defince range lock macros here, maybe use "__sync_fetch_and_add"
 
 typedef volatile int ctfs_lock_t;
 

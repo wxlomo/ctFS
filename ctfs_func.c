@@ -936,6 +936,19 @@ int  ctfs_access(const char * pathname, int mode){
 	return 0;
 }
 
+static int check_fcntl_cmd(unsigned cmd)
+{
+	switch (cmd) {
+	case F_GETFL:
+	case F_SETFL:
+	case F_SETLK:
+	case F_SETLKW: 
+	case F_GETLK:
+		return 1;
+	}
+	return 0;
+}
+
 /*
 fcntl() performs one of the operations described below on the
 open file descriptor fd.  The operation is determined by cmd.
@@ -971,16 +984,20 @@ int ctfs_fcntl(int fd, int cmd, ...){
 		return ct_rt.fd[fd].flags;
 		break;
 	//Set the file status flags to the value specified by arg.
+	//On Linux, this command can change only the 
+    //O_APPEND, O_ASYNC, O_DIRECT, O_NOATIME, and
+    //O_NONBLOCK flags
 	case F_SETFL:		
 		va_start(ap, cmd);
 		ct_rt.fd[fd].flags = va_arg(ap, int);
 		return 0;
 
-	case F_SETLK:	// TODO: Implement
+	case F_SETLK:
+	case F_SETLKW: 	// TODO: Implement https://elixir.bootlin.com/linux/v4.14.224/source/fs/locks.c#L2254
+		//fcntl_setlk(fd, filp, cmd, &flock);
 		break;
-	case F_SETLKW: 	// TODO: Implement
-		break;
-	case F_GETLK:	// TODO: Implement
+	case F_GETLK:	// TODO: Implement https://elixir.bootlin.com/linux/v4.14.224/source/fs/locks.c#L2128
+		//fcntl_getlk(filp, cmd, &flock);
 		break;
 
 	default:
