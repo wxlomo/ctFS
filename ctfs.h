@@ -6,6 +6,7 @@
 #include <inttypes.h>
 #include <linux/magic.h>
 #include <linux/falloc.h>
+#include <linux/fs.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
