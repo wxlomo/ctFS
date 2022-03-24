@@ -993,10 +993,10 @@ int ctfs_fcntl(int fd, int cmd, ...){
 		return 0;
 
 	case F_SETLK:
-	case F_SETLKW: 	// TODO: Implement https://elixir.bootlin.com/linux/v4.14.224/source/fs/locks.c#L2254
+	case F_SETLKW: 	// TODO: Implement https://elixir.bootlin.com/linux/v5.17/source/fs/locks.c#L2312
 		//fcntl_setlk(fd, filp, cmd, &flock);
 		break;
-	case F_GETLK:	// TODO: Implement https://elixir.bootlin.com/linux/v4.14.224/source/fs/locks.c#L2128
+	case F_GETLK:	// TODO: Implement https://elixir.bootlin.com/linux/v5.17/source/fs/locks.c#L2188
 		//fcntl_getlk(filp, cmd, &flock);
 		break;
 

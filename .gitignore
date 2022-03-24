@@ -2,3 +2,4 @@ ctFS.code-workspace
 *.a
 *.o
 *.so
+.vscode/settings.json

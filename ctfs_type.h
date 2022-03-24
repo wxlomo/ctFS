@@ -26,7 +26,6 @@
 #include "ctfs_config.h"
 #include "lib_dax.h"
 #include "ctfs_util.h"
-
 #ifdef __GNUC__
 #define likely(x)       __builtin_expect((x), 1)
 #define unlikely(x)     __builtin_expect((x), 0)
@@ -125,5 +124,39 @@ typedef ct_dirent_t* ct_dirent_pt;
 /******************************************
  * In-RAM structures 
  ******************************************/
+struct hlist_head {
+	struct hlist_node *first;
+};
+
+/*
+ * The global file_lock_list is only used for displaying /proc/locks, so we
+ * keep a list on each CPU, with each list protected by its own spinlock.
+ * Global serialization is done using file_rwsem.
+ *
+ * Note that alterations to the list also require that the relevant flc_lock is
+ * held.
+ * for more detail: https://elixir.bootlin.com/linux/v5.17/source/fs/locks.c#L124
+ */
+
+struct file_lock_list_struct {
+	uint64_t lock;
+	struct hlist_head hlist;
+};
+
+typedef void *fl_owner_t;
+
+struct ct_list_head {
+	struct ct_list_head *next, *prev;
+};
+
+//More details on file lock struct: https://elixir.bootlin.com/linux/v4.14.224/source/include/linux/fs.h#L1003
+struct ct_file_lock {
+    struct ct_file_lock *fl_next;   /* singly linked list for this inode  */
+    struct ct_list_head fl_list;	/* link into file_lock_context */
+    fl_owner_t fl_owner;
+    unsigned int fl_flags;
+	unsigned char fl_type;
+	unsigned int fl_pid;
+};
 
 #endif
