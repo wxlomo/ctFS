@@ -124,9 +124,16 @@ typedef ct_dirent_t* ct_dirent_pt;
 /******************************************
  * In-RAM structures 
  ******************************************/
+
+struct hlist_node {
+
+};
+
+// the head of the hash table for locks
 struct hlist_head {
 	struct hlist_node *first;
 };
+
 
 /*
  * The global file_lock_list is only used for displaying /proc/locks, so we
@@ -153,10 +160,13 @@ struct ct_list_head {
 struct ct_file_lock {
     struct ct_file_lock *fl_next;   /* singly linked list for this inode  */
     struct ct_list_head fl_list;	/* link into file_lock_context */
-    fl_owner_t fl_owner;
+    fl_owner_t fl_owner;            /* should be pointed to current file*/
+    int fl_file;    /* it was a file pointer, however ctFS open() only returns a int*/
     unsigned int fl_flags;
 	unsigned char fl_type;
 	unsigned int fl_pid;
+    unsigned int fl_start;          /* starting address of the range lock*/
+    unsigned int fl_end;            /* ending address of the range lock*/
 };
 
 #endif

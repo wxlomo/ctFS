@@ -144,16 +144,17 @@ int ctfs_open (const char *pathname, int flags, ...){
 	if(flags & O_CREAT){
 		frame.flag |= CT_INODE_FRAME_CREATE;
 	}
+	//TODO: implement the R/W mode handler here
 	if(*pathname != '/'){
 		// start from the current dir
 		frame.inode_start = ct_rt.current_dir;
 	}
 	for(fd = 0; fd < CT_MAX_FD; fd++){
 		if(ct_rt.fd[fd].inode == NULL){
-			break;
+			break;	//get the very first available fd
 		}
 	}
-	if(fd == CT_MAX_FD){
+	if(fd == CT_MAX_FD){	//too many opened file
 		ct_rt.errorn = ENFILE;
 		dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 		ctfs_lock_release(ct_rt.open_lock);
@@ -164,7 +165,7 @@ int ctfs_open (const char *pathname, int flags, ...){
 #endif
 		return -1;
 	}
-	res = inode_path2inode(&frame);
+	res = inode_path2inode(&frame);	//retrieve the inode based on path
 	if(res){
 		ct_rt.errorn = res;
 		dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
@@ -176,7 +177,7 @@ int ctfs_open (const char *pathname, int flags, ...){
 #endif
 		return -1;
 	}
-	c = frame.current;
+	c = frame.current;	//frame.current is updated in inode_path2inode() above
 	c->i_otim = time(NULL);
 	inode_rt_unlock(frame.current->i_number);
 
