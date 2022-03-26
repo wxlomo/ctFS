@@ -30,7 +30,21 @@ void ctfs_file_range_lock_init(){
 
 }
 
+/************************************************
+Inputs: fd, starting position, size, lock type
+Output: 0 if acquire the lock, error elsewise
+*************************************************/
 void ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...){
+    printf(fd);
+    switch (flag) {
+        case 0: // when it is requiring an read lock
+            
+
+        case 1:
+
+    }
+
+
 
 }
 
