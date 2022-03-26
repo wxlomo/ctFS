@@ -4,8 +4,7 @@
 #include "ctfs_format.h"
 
 
-/* File descriptor
- */
+/* File descriptor */
 struct ct_fd_t{
 	ct_inode_t     *inode;
 	size_t      	offset;
@@ -20,7 +19,18 @@ struct ct_fd_t{
 };
 typedef struct ct_fd_t ct_fd_t;
 
-
+/* File lock */
+struct ct_fl_t {
+    ct_fl_t *fl_next;   			/* single liked list to other locks on this file */
+    uint64_t fl_count;				/* how many read requests are received for this range*/
+    int fl_fd;    					/*  Which fd has this lock*/
+    unsigned int fl_flags;
+	unsigned char fl_type;			/* type of the current lock*/
+	unsigned int fl_pid;
+    unsigned int fl_start;          /* starting address of the range lock*/
+    unsigned int fl_end;            /* ending address of the range lock*/
+};
+typedef struct ct_fl_t ct_fl_t;
 
 /* end of in-RAM structures */
 struct failsafe_frame;
@@ -55,7 +65,8 @@ struct ct_runtime{
 	ctfs_lock_t			open_lock;
 	char 				open_lock_padding_[60];
 	//TODO: implement range lock list here
-	//one entry per opened file
+	uint64_t			file_range_lock[CT_MAX_FD];
+	//one entry per inode
 
 	// ppg lock
 	uint64_t			pgg_lock;

@@ -155,18 +155,4 @@ typedef void *fl_owner_t;
 struct ct_list_head {
 	struct ct_list_head *next, *prev;
 };
-
-//More details on file lock struct: https://elixir.bootlin.com/linux/v4.14.224/source/include/linux/fs.h#L1003
-struct ct_file_lock {
-    struct ct_file_lock *fl_next;   /* singly linked list for this inode  */
-    struct ct_list_head fl_list;	/* link into file_lock_context */
-    fl_owner_t fl_owner;            /* should be pointed to current file*/
-    int fl_file;    /* it was a file pointer, however ctFS open() only returns a int*/
-    unsigned int fl_flags;
-	unsigned char fl_type;
-	unsigned int fl_pid;
-    unsigned int fl_start;          /* starting address of the range lock*/
-    unsigned int fl_end;            /* ending address of the range lock*/
-};
-
 #endif
