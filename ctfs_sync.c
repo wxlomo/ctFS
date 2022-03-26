@@ -36,11 +36,16 @@ Output: 0 if acquire the lock, error elsewise
 *************************************************/
 void ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...){
     printf(fd);
-    switch (flag) {
-        case 0: // when it is requiring an read lock
-            
+    // Range parameters already checked in pread/pwrite
 
-        case 1:
+    switch (flag) {
+
+        case 0: // when it is requiring an read lock
+            while (ct_rt.file_range_lock[fd]->fl_next != NULL) {
+                
+            }
+
+        case 1: // when it is requiring an write lock
 
     }
 

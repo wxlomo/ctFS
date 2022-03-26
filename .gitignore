@@ -4,3 +4,10 @@ ctFS.code-workspace
 *.so
 .vscode/settings.json
 .vscode/c_cpp_properties.json
+.vs/ctFS/v16/.suo
+*.db
+*.db-shm
+*.db-wal
+*.opendb
+*.json
+*.sqlite
