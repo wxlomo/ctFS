@@ -110,6 +110,7 @@ int ctfs_init(int flag){
 	ctfs_lock_init(ct_rt.open_lock);
 	ctfs_lock_init(ct_rt.inode_bmp_lock);
 	//TODO: init the range lock list here
+	ctfs_file_range_lock_init();
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return 0;
 }
@@ -186,7 +187,6 @@ int ctfs_open (const char *pathname, int flags, ...){
 	ct_rt.fd[fd].flags = flags;		//R/W flags set here
 	ct_rt.fd[fd].prefaulted_start = 0;
 	ct_rt.fd[fd].prefaulted_bytes = 0;
-	//TODO: the range lock of this fd may needs to be init here. 
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time = 0;
 	ct_rt.fd[fd].pswap_time = 0;
@@ -302,6 +302,7 @@ int ctfs_close(int fd){
 		return -1;
 	}
 	//TODO: the associated locks of the file must be released here.
+	ctfs_file_range_lock_release(fd);
 	ct_rt.fd[fd].inode = 0;
 #ifdef CTFS_DEBUG
 	printf("closed fd: %d\n", fd);
@@ -350,6 +351,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	timer_start();
 #endif
 	//TODO: check and get Read lock here
+	ctfs_file_range_lock_acquire(fd, offset, count, 0);
 	if(count > PMD_SIZE){
 		big_memcpy(buf, target + offset, count);
 	}
@@ -357,6 +359,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 		memcpy(buf, target + offset, count);
 	}
 	//TODO: release the lock here if possible
+	ctfs_file_range_lock_release(fd, offset, count, 0);
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
@@ -416,9 +419,11 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	timer_start();
 #endif
-	//check and get write lock here
+	//TODO: check and get write lock here
+	ctfs_file_range_lock_acquire(fd, offset, count, 1);
 	avx_cpy(addr_base + offset, buf, count);
-	//release the write lock here
+	//TODO: release the write lock here
+	ctfs_file_range_lock_release(fd, offset, count, 1);
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
@@ -998,13 +1003,10 @@ int ctfs_fcntl(int fd, int cmd, ...){
 		va_start(ap, cmd);
 		ct_rt.fd[fd].flags = va_arg(ap, int);
 		return 0;
-
 	case F_SETLK:
-	case F_SETLKW: 	// TODO: Implement https://elixir.bootlin.com/linux/v5.17/source/fs/locks.c#L2312
-		//fcntl_setlk(fd, filp, cmd, &flock);
+	case F_SETLKW:
 		break;
-	case F_GETLK:	// TODO: Implement https://elixir.bootlin.com/linux/v5.17/source/fs/locks.c#L2188
-		//fcntl_getlk(filp, cmd, &flock);
+	case F_GETLK:
 		break;
 
 	default:

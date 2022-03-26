@@ -57,18 +57,23 @@ int bitlock_try_acquire(uint32_t *bitlock, uint32_t bit, uint32_t tries);
 
 void bitlock_release(uint64_t *bitlock, uint64_t location);
 
-//functions for range lock implementations
-void rangelock_acquire(int fd, size_t count, off_t offset);
-
-void rangelock_try_acquire(int fd, size_t count, off_t offset);
-
-void rangelock_release(int fd, size_t count, off_t offset);
-
 void avx_cpy(void *dest, const void *src, size_t size);
 
 void avx_cpyt(void *dest, void *src, size_t size);
 
 // void big_memcpy(void *dest, const void *src, size_t n);
+
+/************************************************ 
+ * Implement file range lock
+ ************************************************/
+
+void ctfs_file_range_lock_init();
+
+void ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...);
+
+void ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, ...);
+
+void ctfs_file_range_lock_release(int fd, ...);
 
 /***********************************************
  * Debug

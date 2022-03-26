@@ -23,3 +23,18 @@ inline void bit_lock_release(uint64_t *addr, uint64_t num){
 }
 
 // TODO: implement lock funchtions here, maybe use "__sync_fetch_and_add"
+void ctfs_file_range_lock_init(){
+
+}
+
+void ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...){
+
+}
+
+void ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, ...){
+
+}
+
+void ctfs_file_range_lock_release(int fd, ...){
+    
+}
