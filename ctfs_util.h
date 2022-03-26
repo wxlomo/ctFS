@@ -15,7 +15,7 @@
 __sync_fetch_and_or((char*) (((uint64_t)addr)+(num/8)),      \
 ((char)0x01 << (num%8)))
 
-#define FETCH_AND_unSET_BIT(addr, num)                              \
+#define FETCH_AND_unSET_BIT(addr, num)                        \
 __sync_and_and_fetch((char*) (((uint64_t)addr)+(num/8)),      \
 ~((char)0x01 << (num%8))) 
 
@@ -25,17 +25,17 @@ typedef volatile int ctfs_lock_t;
  * Implement atomic functions for file range lock
  ************************************************/
 // TODO: defince range lock macros here, maybe use "__sync_fetch_and_add"
-#define LOCK_ACQUIRE(addr)                               \
+#define TEST_AND_SET(addr)                               \
 __sync_lock_test_and_set(addr, 1)
 
-#define LOCK_RELEASE(addr)                               \
+#define TEST_AND_SET_RELEASE(addr)                       \
 __sync_lock_release(addr)
 
-#define FETCH_AND_INCREMENT(addr)                        \
-__sync_fetch_and_add(addr, 1)
+#define FETCH_AND_ADD(addr, val)                         \
+__sync_fetch_and_add(addr, val)
 
-#define FETCH_AND_DECREMENT(addr)                        \
-__sync_fetch_and_sub(addr, 1)
+#define FETCH_AND_SUB(addr, val)                         \
+__sync_fetch_and_sub(addr, val)
 
 //NOTE: the current open lock is implemented with the following spain locks below
 #define ctfs_lock_try(lock)     pthread_spin_trylock(&lock)
