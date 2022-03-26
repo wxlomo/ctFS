@@ -377,11 +377,11 @@ For more details: https://man7.org/linux/man-pages/man2/pwrite.2.html
 */
 static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count, off_t offset){
 	if(unlikely(fd >= CT_MAX_FD || ct_rt.fd[fd].inode == NULL)){
-		ct_rt.errorn = EBADF;
+		ct_rt.errorn = EBADF;		// error if fd is out of range, or has no inode associated
 		return 0;
 	}
 	if(unlikely((ct_rt.fd[fd].flags & (O_WRONLY | O_RDWR)) == 0)){
-		ct_rt.errorn = EBADF;
+		ct_rt.errorn = EBADF;		// if open mode is not WriteOnly or ReadWrite
 		return 0;
 	}
 	dax_grant_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
@@ -392,12 +392,12 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #endif
 	inode_rw_lock(inode_n);
 	end = offset + count;
-	if(unlikely(end > ct_rt.fd[fd].inode->i_size)){
+	if(unlikely(end > ct_rt.fd[fd].inode->i_size)){		//if requested write range is beyond existing inode size
 #if CTFS_DEBUG > 2
 		printf("RESIZE! %lu -> %lu", ct_rt.fd[fd].inode->i_size, end);
 		timer_start();
 #endif
-		if(inode_resize(ct_rt.fd[fd].inode, offset + count)){
+		if(inode_resize(ct_rt.fd[fd].inode, offset + count)){	//resize the inode
 			ct_rt.fd[fd].prefaulted_bytes = 0;
 		}
 #if CTFS_DEBUG > 2

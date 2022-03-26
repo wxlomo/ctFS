@@ -116,8 +116,8 @@ failed:
     return -1;
 }
 
-void bitlock_acquire(uint64_t *bitlock, uint64_t location){
-    uint64_t * target = bitlock + (location / 64);
+void bitlock_acquire(uint64_t *bitlock, uint64_t location){     //bitlock is an array 
+    uint64_t * target = bitlock + (location / 64);              //base addredd of the inode?
     uint64_t offset = location % 64;
     while((((uint64_t)0b01 << offset) & __sync_fetch_and_or(target, (uint64_t)0b01 << offset)) != 0){
         // pthread_yield();

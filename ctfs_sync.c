@@ -22,4 +22,4 @@ inline void bit_lock_release(uint64_t *addr, uint64_t num){
     FETCH_AND_unSET_BIT(addr, num);
 }
 
-// TODO: implement semaphore here, maybe use "__sync_fetch_and_add"
+// TODO: implement lock funchtions here, maybe use "__sync_fetch_and_add"
