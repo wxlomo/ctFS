@@ -69,6 +69,12 @@ void avx_cpyt(void *dest, void *src, size_t size);
 
 void ctfs_file_range_lock_init();
 
+//check if two given lock have overlaps
+int check_overlap(struct ct_fl_t *lock1, struct ct_fl_t *lock2)
+
+//add a new node to the lock list upon the request
+void ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag);
+
 void ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...);
 
 void ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, ...);
