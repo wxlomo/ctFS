@@ -22,10 +22,10 @@ typedef struct ct_fd_t ct_fd_t;
 /* File lock */
 struct ct_fl_t {
     ct_fl_t *fl_next;   			/* single liked list to other locks on this file */
-    uint64_t fl_count;				/* how many read requests are received for this range*/
+    uint64_t fl_rcount;				/* how many read requests are received for this range*/
+	uint64_t fl_wcount;				/* how many write requests are received for this range*/
     int fl_fd;    					/*  Which fd has this lock*/
 	volatile int fl_lock;				/* lock variable*/
-    unsigned int fl_flags;
 	unsigned char fl_type;			/* type of the current lock*/
 	unsigned int fl_pid;
     unsigned int fl_start;          /* starting address of the range lock*/

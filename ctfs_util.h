@@ -31,11 +31,11 @@ __sync_lock_test_and_set(addr, 1)
 #define TEST_AND_SET_RELEASE(addr)                       \
 __sync_lock_release(addr)
 
-#define FETCH_AND_ADD(addr, val)                         \
-__sync_fetch_and_add(addr, val)
+#define FETCH_AND_INCREMENT(addr)                         \
+__sync_fetch_and_add(addr, 1)
 
-#define FETCH_AND_SUB(addr, val)                         \
-__sync_fetch_and_sub(addr, val)
+#define FETCH_AND_DECREMENT(addr)                         \
+__sync_fetch_and_sub(addr, 1)
 
 #define FENCE()                                          \
 __sync_synchronize()
@@ -92,6 +92,18 @@ void ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, .
 void ctfs_file_range_lock_release(int fd, off_t start, size_t n, int flag, ...);
 
 void ctfs_file_range_lock_release_all(int fd);
+
+/************************************************ 
+ * Implement read and write lock
+ ************************************************/
+
+inline void ctfs_read_lock_acquire(ct_fl_t *lock);
+
+inline void ctfs_write_lock_acquire(ct_fl_t *lock);
+
+inline void ctfs_read_lock_release(ct_fl_t *lock);
+
+inline void ctfs_write_lock_acquire(ct_fl_t *lock);
 
 /***********************************************
  * Debug
