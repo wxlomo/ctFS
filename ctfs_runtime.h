@@ -24,6 +24,7 @@ struct ct_fl_t {
     ct_fl_t *fl_next;   			/* single liked list to other locks on this file */
     uint64_t fl_count;				/* how many read requests are received for this range*/
     int fl_fd;    					/*  Which fd has this lock*/
+	volatile int fl_lock;				/* lock variable*/
     unsigned int fl_flags;
 	unsigned char fl_type;			/* type of the current lock*/
 	unsigned int fl_pid;
