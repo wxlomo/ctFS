@@ -20,6 +20,8 @@ struct ct_fd_t{
 };
 typedef struct ct_fd_t ct_fd_t;
 
+
+
 /* end of in-RAM structures */
 struct failsafe_frame;
 
@@ -52,7 +54,8 @@ struct ct_runtime{
 	char 				open_lock_padding[56];
 	ctfs_lock_t			open_lock;
 	char 				open_lock_padding_[60];
-	//TODO: implement range lock array here;
+	//TODO: implement range lock list here
+	//one entry per opened file
 
 	// ppg lock
 	uint64_t			pgg_lock;

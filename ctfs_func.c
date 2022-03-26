@@ -109,7 +109,7 @@ int ctfs_init(int flag){
 	ct_rt.current_dir = &ct_rt.inode_start[ct_rt.super_blk->root_inode];
 	ctfs_lock_init(ct_rt.open_lock);
 	ctfs_lock_init(ct_rt.inode_bmp_lock);
-	//TODO: init the range locks here
+	//TODO: init the range lock list here
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return 0;
 }
@@ -144,7 +144,6 @@ int ctfs_open (const char *pathname, int flags, ...){
 	if(flags & O_CREAT){
 		frame.flag |= CT_INODE_FRAME_CREATE;
 	}
-	//TODO: implement the R/W mode handler here
 	if(*pathname != '/'){
 		// start from the current dir
 		frame.inode_start = ct_rt.current_dir;
@@ -152,6 +151,7 @@ int ctfs_open (const char *pathname, int flags, ...){
 	for(fd = 0; fd < CT_MAX_FD; fd++){
 		if(ct_rt.fd[fd].inode == NULL){
 			break;	//get the very first available fd
+					//every open create a new fd
 		}
 	}
 	if(fd == CT_MAX_FD){	//too many opened file
@@ -183,9 +183,10 @@ int ctfs_open (const char *pathname, int flags, ...){
 
 	ct_rt.fd[fd].inode = frame.current;
 	ct_rt.fd[fd].offset = 0;
-	ct_rt.fd[fd].flags = flags;
+	ct_rt.fd[fd].flags = flags;		//R/W flags set here
 	ct_rt.fd[fd].prefaulted_start = 0;
 	ct_rt.fd[fd].prefaulted_bytes = 0;
+	//TODO: the range lock of this fd may needs to be init here. 
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time = 0;
 	ct_rt.fd[fd].pswap_time = 0;
@@ -300,6 +301,7 @@ int ctfs_close(int fd){
 		ct_rt.errorn = EBADF;
 		return -1;
 	}
+	//TODO: the associated locks of the file must be released here.
 	ct_rt.fd[fd].inode = 0;
 #ifdef CTFS_DEBUG
 	printf("closed fd: %d\n", fd);
@@ -347,12 +349,14 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 #ifdef CTFS_DEBUG
 	timer_start();
 #endif
+	//TODO: check and get Read lock here
 	if(count > PMD_SIZE){
 		big_memcpy(buf, target + offset, count);
 	}
 	else{
 		memcpy(buf, target + offset, count);
 	}
+	//TODO: release the lock here if possible
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
@@ -412,7 +416,9 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	timer_start();
 #endif
+	//check and get write lock here
 	avx_cpy(addr_base + offset, buf, count);
+	//release the write lock here
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
