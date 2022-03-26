@@ -302,7 +302,7 @@ int ctfs_close(int fd){
 		return -1;
 	}
 	//TODO: the associated locks of the file must be released here.
-	ctfs_file_range_lock_release(fd);
+	ctfs_file_range_lock_release_all(fd);
 	ct_rt.fd[fd].inode = 0;
 #ifdef CTFS_DEBUG
 	printf("closed fd: %d\n", fd);

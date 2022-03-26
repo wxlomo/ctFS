@@ -73,7 +73,9 @@ void ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...);
 
 void ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, ...);
 
-void ctfs_file_range_lock_release(int fd, ...);
+void ctfs_file_range_lock_release(int fd, off_t start, size_t n, int flag, ...);
+
+void ctfs_file_range_lock_release_all(int fd);
 
 /***********************************************
  * Debug
