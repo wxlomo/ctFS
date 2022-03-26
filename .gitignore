@@ -4,10 +4,17 @@ ctFS.code-workspace
 *.so
 .vscode/settings.json
 .vscode/c_cpp_properties.json
+<<<<<<< Updated upstream
 .vs/ctFS/v16/.suo
 *.db
 *.db-shm
 *.db-wal
 *.opendb
+=======
+.vs/ctFS/v16/Browse.VC.opendb
+*.db-shm
+*.db
+*.db-wal
+>>>>>>> Stashed changes
 *.json
 *.sqlite
