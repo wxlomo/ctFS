@@ -65,7 +65,7 @@ struct ct_runtime{
 	ctfs_lock_t			open_lock;
 	char 				open_lock_padding_[60];
 	//TODO: implement range lock list here
-	uint64_t			file_range_lock[CT_MAX_FD];
+	ct_fl_t				file_range_lock[CT_MAX_FD];
 	//one entry per inode
 
 	// ppg lock
