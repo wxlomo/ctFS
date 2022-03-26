@@ -37,6 +37,9 @@ __sync_fetch_and_add(addr, val)
 #define FETCH_AND_SUB(addr, val)                         \
 __sync_fetch_and_sub(addr, val)
 
+#define FENCE()                                          \
+__sync_synchronize()
+
 //NOTE: the current open lock is implemented with the following spain locks below
 #define ctfs_lock_try(lock)     pthread_spin_trylock(&lock)
 #define ctfs_lock_acquire(lock) pthread_spin_lock(&lock)
