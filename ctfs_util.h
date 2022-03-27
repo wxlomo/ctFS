@@ -24,25 +24,6 @@ typedef volatile int ctfs_lock_t;
 struct ct_fl_t;
 typedef struct ct_fl_t ct_fl_t;
 
-/************************************************ 
- * Implement atomic functions for file range lock
- ************************************************/
-// TODO: defince range lock macros here, maybe use "__sync_fetch_and_add"
-#define TEST_AND_SET(addr)                               \
-__sync_lock_test_and_set(addr, 1)
-
-#define TEST_AND_SET_RELEASE(addr)                       \
-__sync_lock_release(addr)
-
-#define FETCH_AND_INCREMENT(addr)                         \
-__sync_fetch_and_add(addr, 1)
-
-#define FETCH_AND_DECREMENT(addr)                         \
-__sync_fetch_and_sub(addr, 1)
-
-#define FENCE()                                          \
-__sync_synchronize()
-
 //NOTE: the current open lock is implemented with the following spain locks below
 #define ctfs_lock_try(lock)     pthread_spin_trylock(&lock)
 #define ctfs_lock_acquire(lock) pthread_spin_lock(&lock)
