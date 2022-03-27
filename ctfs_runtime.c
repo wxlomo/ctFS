@@ -59,10 +59,12 @@ void ctfs_file_range_lock_init(){
 void ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...){
     while(TEST_AND_SET(&ct_rt.file_range_lock[fd]->fl_lock));
     ct_fl_t *temp = ctfs_lock_list_add_node(start, n, flag);
-    ctfs_block_list_update_all(temp);
-    ctfs_wait_list_update(temp);
+    // TODO: ctfs_block_list_update(temp);
+    // TODO: ctfs_wait_list_add_to_all(temp);
     TEST_AND_SET_RELEASE(&ct_rt.file_range_lock[fd]->fl_lock);
-    while(!ctfs_block_list_is_empty);
+    while(!ctfs_block_list_is_empty(temp)){
+        FENCE();
+    }
 }
 
 void ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, ...){
@@ -72,7 +74,7 @@ void ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, .
 void ctfs_file_range_lock_release(int fd, off_t start, size_t n, int flag, ...){
     while(TEST_AND_SET(&ct_rt.file_range_lock[fd]->fl_lock));
     ct_fl_t *temp = ctfs_lock_list_remove_node(start, n, flag);
-    ctfs_block_list_remove_all(temp);
+    // TODO: ctfs_lock_list_remove_from_all(temp);
     free(temp);
     TEST_AND_SET_RELEASE(&ct_rt.file_range_lock[fd]->fl_lock);
 }
