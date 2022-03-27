@@ -156,16 +156,4 @@ void ctfs_file_range_lock_release(int fd, off_t start, size_t n, int flag, ...);
 
 void ctfs_file_range_lock_release_all(int fd);
 
-/************************************************ 
- * Implement read and write lock
- ************************************************/
-
-void ctfs_read_lock_acquire(ct_fl_t *lock);
-
-void ctfs_write_lock_acquire(ct_fl_t *lock);
-
-void ctfs_read_lock_release(ct_fl_t *lock);
-
-void ctfs_write_lock_release(ct_fl_t *lock);
-
 #endif
