@@ -120,6 +120,25 @@ typedef struct ct_inode_frame ct_inode_frame_t;
 
 #define ct_super ct_rt.super_blk
 
+/************************************************ 
+ * Implement atomic functions for file range lock
+ ************************************************/
+// TODO: defince range lock macros here, maybe use "__sync_fetch_and_add"
+#define TEST_AND_SET(addr)                               \
+__sync_lock_test_and_set(addr, 1)
+
+#define TEST_AND_SET_RELEASE(addr)                       \
+__sync_lock_release(addr)
+
+#define FETCH_AND_INCREMENT(addr)                         \
+__sync_fetch_and_add(addr, 1)
+
+#define FETCH_AND_DECREMENT(addr)                         \
+__sync_fetch_and_sub(addr, 1)
+
+#define FENCE()                                          \
+__sync_synchronize()
+
 /* core help functions */
 // inode related
 void inode_rt_lock(index_t inode_n);
