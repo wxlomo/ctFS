@@ -19,6 +19,9 @@ struct ct_fd_t{
 };
 typedef struct ct_fd_t ct_fd_t;
 
+struct ct_fl_t;
+
+/* block list and wait list segments */
 struct ct_fl_seg{
     struct ct_fl_seg *prev;
     struct ct_fl_seg *next;
