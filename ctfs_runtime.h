@@ -19,18 +19,16 @@ struct ct_fd_t{
 };
 typedef struct ct_fd_t ct_fd_t;
 
-struct ct_fl_t;
-
 struct ct_fl_seg{
     struct ct_fl_seg *prev;
     struct ct_fl_seg *next;
     struct ct_fl_t *addr;
-}
+};
 typedef struct ct_fl_seg ct_fl_seg;
 
 /* File lock */
 struct ct_fl_t {
-    ct_fl_t *fl_next;   			/* single liked list to other locks on this file */
+    struct ct_fl_t *fl_next;   			/* single liked list to other locks on this file */
     uint64_t fl_rcount;				/* how many read requests are received for this range*/
 	uint64_t fl_wcount;				/* how many write requests are received for this range*/
     int fl_fd;    					/*  Which fd has this lock*/
@@ -140,4 +138,31 @@ static inline long calc_diff(struct timespec start, struct timespec end){
 };
 void timer_start();
 uint64_t timer_end();
+
+/************************************************ 
+ * Implement file range lock
+ ************************************************/
+
+void ctfs_file_range_lock_init();
+
+void ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...);
+
+void ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, ...);
+
+void ctfs_file_range_lock_release(int fd, off_t start, size_t n, int flag, ...);
+
+void ctfs_file_range_lock_release_all(int fd);
+
+/************************************************ 
+ * Implement read and write lock
+ ************************************************/
+
+void ctfs_read_lock_acquire(ct_fl_t *lock);
+
+void ctfs_write_lock_acquire(ct_fl_t *lock);
+
+void ctfs_read_lock_release(ct_fl_t *lock);
+
+void ctfs_write_lock_release(ct_fl_t *lock);
+
 #endif

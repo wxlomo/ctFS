@@ -21,6 +21,9 @@ __sync_and_and_fetch((char*) (((uint64_t)addr)+(num/8)),      \
 
 typedef volatile int ctfs_lock_t;
 
+struct ct_fl_t;
+typedef struct ct_fl_t ct_fl_t;
+
 /************************************************ 
  * Implement atomic functions for file range lock
  ************************************************/
@@ -78,32 +81,6 @@ void avx_cpy(void *dest, const void *src, size_t size);
 void avx_cpyt(void *dest, void *src, size_t size);
 
 // void big_memcpy(void *dest, const void *src, size_t n);
-
-/************************************************ 
- * Implement file range lock
- ************************************************/
-
-void ctfs_file_range_lock_init();
-
-void ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...);
-
-void ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, ...);
-
-void ctfs_file_range_lock_release(int fd, off_t start, size_t n, int flag, ...);
-
-void ctfs_file_range_lock_release_all(int fd);
-
-/************************************************ 
- * Implement read and write lock
- ************************************************/
-
-inline void ctfs_read_lock_acquire(ct_fl_t *lock);
-
-inline void ctfs_write_lock_acquire(ct_fl_t *lock);
-
-inline void ctfs_read_lock_release(ct_fl_t *lock);
-
-inline void ctfs_write_lock_acquire(ct_fl_t *lock);
 
 /***********************************************
  * Debug
