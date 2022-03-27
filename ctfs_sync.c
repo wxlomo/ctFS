@@ -10,7 +10,6 @@
 #include <stdio.h>
 
 #include "ctfs_type.h"
-#include "ctfs_runtime.h"
 
 #define FL_READ 0
 #define FL_WRITE 1

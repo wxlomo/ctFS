@@ -76,6 +76,11 @@ void ctfs_file_range_lock_release_all(int fd){
  * Implement linked list actions
  ************************************************/
 
+inline int check_overlap(struct ct_fl_t *lock1, struct ct_fl_t *lock2){
+    return ((lock1->fl_start <= lock2->fl_start) && (lock1->fl_end >= lock2->fl_start)) ||\
+    ((lock2->fl_start <= lock1->fl_start) && (lock2->fl_end >= lock1->fl_start));
+}
+
 inline void ctfs_lock_list_add_node(off_t start, size_t n, int flag){
     ct_fl_t *temp, *tail, *last;
     tail = head.fl_next;   //get the head of the lock list
@@ -86,12 +91,6 @@ inline void ctfs_lock_list_add_node(off_t start, size_t n, int flag){
     temp->fl_end = start + n - 1;
     //TODO: get locklist here
     while(tail != NULL){
-        //check if current list contains a lock that is not compatable
-        if(check_overlap(tail, temp)){
-            printf("Overlap found, abourt");
-            //overlap found stop the process
-            return -1;
-        }
         last = tail;
         tail = tail->fl_next;    
     }
