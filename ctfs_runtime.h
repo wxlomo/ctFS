@@ -19,6 +19,15 @@ struct ct_fd_t{
 };
 typedef struct ct_fd_t ct_fd_t;
 
+struct ct_fl_t;
+
+struct ct_fl_seg{
+    struct ct_fl_seg *prev;
+    struct ct_fl_seg *next;
+    struct ct_fl_t *addr;
+}
+typedef struct ct_fl_seg ct_fl_seg;
+
 /* File lock */
 struct ct_fl_t {
     ct_fl_t *fl_next;   			/* single liked list to other locks on this file */
