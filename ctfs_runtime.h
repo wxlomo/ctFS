@@ -22,7 +22,7 @@ typedef struct ct_fd_t ct_fd_t;
 struct ct_fl_t;
 
 /* block list and wait list segments */
-struct ct_fl_seg {
+struct ct_fl_seg{
     struct ct_fl_seg *prev;
     struct ct_fl_seg *next;
     struct ct_fl_t *addr;
@@ -31,11 +31,13 @@ typedef struct ct_fl_seg ct_fl_seg;
 
 /* File lock */
 struct ct_fl_t {
-    struct ct_fl_t *fl_next;   			/* single liked list to other locks on this file */
-    uint64_t fl_rcount;				/* how many read requests are received for this range*/
-	uint64_t fl_wcount;				/* how many write requests are received for this range*/
+	struct ct_fl_t *fl_prev;
+    struct ct_fl_t *fl_next;   		/* single liked list to other locks on this file */
+	struct ct_fl_seg fl_block; 		/* locks that is blocking this lock */
+	struct ct_fl_seg fl_wait; 		/* locks that is waiting for this lock*/
+
     int fl_fd;    					/*  Which fd has this lock*/
-	volatile int fl_lock;				/* lock variable*/
+	volatile int fl_lock;			/* lock variable*/
 	unsigned char fl_type;			/* type of the current lock*/
 	unsigned int fl_pid;
     unsigned int fl_start;          /* starting address of the range lock*/
@@ -155,5 +157,17 @@ void ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, .
 void ctfs_file_range_lock_release(int fd, off_t start, size_t n, int flag, ...);
 
 void ctfs_file_range_lock_release_all(int fd);
+
+/************************************************ 
+ * Implement read and write lock
+ ************************************************/
+
+void ctfs_read_lock_acquire(ct_fl_t *lock);
+
+void ctfs_write_lock_acquire(ct_fl_t *lock);
+
+void ctfs_read_lock_release(ct_fl_t *lock);
+
+void ctfs_write_lock_release(ct_fl_t *lock);
 
 #endif
