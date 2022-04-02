@@ -164,7 +164,7 @@ void timer_start();
 uint64_t timer_end();
 
 /************************************************ 
- * Implement file range lock
+ * Implement actual range lock
  ************************************************/
 
 void ctfs_file_range_lock_init();
@@ -176,5 +176,17 @@ void ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, .
 void ctfs_file_range_lock_release(int fd, off_t start, size_t n, int flag, ...);
 
 void ctfs_file_range_lock_release_all(int fd);
+
+/************************************************ 
+ * Implement range lock mechanism functions
+ ************************************************/
+
+ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag);
+
+ct_fl_t* ctfs_lock_list_find_node(int fd, off_t start, size_t n, int flag);
+
+void ctfs_lock_list_remove_node(ct_fl_t *node);
+
+void print_all_info();
 
 #endif
