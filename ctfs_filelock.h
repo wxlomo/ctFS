@@ -23,16 +23,16 @@ typedef struct ct_fl_seg ct_fl_seg;
 /* File lock */
 struct ct_fl_t {
 	struct ct_fl_t *fl_prev;
-    struct ct_fl_t *fl_next;   		/* single liked list to other locks on this file */
-	struct ct_fl_seg *fl_block; 		/* locks that is blocking this lock */
-	struct ct_fl_seg *fl_wait; 		/* locks that is waiting for this lock*/
+    struct ct_fl_t *fl_next;   		// single liked list to other locks on this file
+	struct ct_fl_seg *fl_block; 	// locks that is blocking this lock
+	struct ct_fl_seg *fl_wait; 		// locks that is waiting for this lock
 
-    int fl_fd;    					/*  Which fd has this lock*/
-	volatile int fl_lock;			/* lock variable*/
-	unsigned char fl_type;			/* type of the current lock*/
+    int fl_fd;    					// Which fd has this lock
+	volatile int fl_lock;			// lock variable
+	unsigned char fl_type;			// type of the current lock
 	unsigned int fl_pid;
-    unsigned int fl_start;          /* starting address of the range lock*/
-    unsigned int fl_end;            /* ending address of the range lock*/
+    unsigned int fl_start;          // starting address of the range lock
+    unsigned int fl_end;            // ending address of the range lock
 };
 typedef struct ct_fl_t ct_fl_t;
 
