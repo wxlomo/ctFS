@@ -54,6 +54,8 @@ __sync_synchronize()
 
 /* Range lock functions */
 
+void ctfs_file_range_lock_init_all();
+
 ct_fl_t* ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag);
 
 ct_fl_t* ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag);

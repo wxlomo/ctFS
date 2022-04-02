@@ -151,6 +151,12 @@ static inline void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
 
 /* Range lock functions */
 
+void ctfs_file_range_lock_init_all(){
+    for(unsigned int fd = 0; fd < CT_MAX_FD; fd++){
+        ct_rt.file_range_lock[fd] = NULL;
+    }
+}
+
 ct_fl_t* ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag){
     ct_fl_t *temp = ctfs_lock_list_add_node(fd, start, n, flag);
     while(temp->fl_block != NULL);
