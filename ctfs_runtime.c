@@ -68,31 +68,27 @@ char* enum_to_string(int mode){
     }
 }
 
-void ctfs_file_range_lock_init(){
-
-}
-
-void ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...){
+ct_fl_t* ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...){
     ct_fl_t *temp = ctfs_lock_list_add_node(fd, start, n, flag);
     while(!ctfs_block_list_is_empty(temp)){
         FENCE();
     }
+    return temp;
 }
 
-int ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, ...){
+ct_fl_t* ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, ...){
     ct_fl_t *temp = ctfs_lock_list_add_node(fd, start, n, flag);
-    if(ctfs_block_list_is_empty(temp)) return 0;
-    else return -1;
+    if(ctfs_block_list_is_empty(temp)) return temp;
+    else return NULL;
 }
 
-void ctfs_file_range_lock_release(int fd, off_t start, size_t n, int flag, ...){
-    ct_fl_t *temp = ctfs_lock_list_find_node(fd, start, n, flag);
-    ctfs_lock_list_remove_node(temp);
+void ctfs_file_range_lock_release(ct_fl_t *node){
+    ctfs_lock_list_remove_node(node);
 }
 
 void ctfs_file_range_lock_release_all(int fd){
     for(ct_fl_t *temp = ct_rt.file_range_lock[fd]->fl_next; temp->fl_next != NULL; temp = temp->fl_next){
-        free(temp->fl_lock);
+        free(temp);
     }
 }
 
@@ -214,18 +210,6 @@ ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
     //pthread_spin_unlock(&lock_list_spin);
 
     return temp;
-}
-
-ct_fl_t* ctfs_lock_list_find_node(int fd, off_t start, size_t n, int flag){
-    pthread_mutex_lock(&lock_list_mutex);
-    if(head != NULL){
-        ct_fl_t *tail = head;
-        while(tail != NULL){
-            if(start == tail->fl_start && start + n - 1 == tail->fl_end && flag == tail->fl_type) return tail;
-            tail = tail->fl_next;
-        }
-    }
-    return NULL;
 }
 
 void ctfs_lock_list_remove_node(ct_fl_t *node){

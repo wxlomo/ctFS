@@ -109,8 +109,6 @@ int ctfs_init(int flag){
 	ct_rt.current_dir = &ct_rt.inode_start[ct_rt.super_blk->root_inode];
 	ctfs_lock_init(ct_rt.open_lock);
 	ctfs_lock_init(ct_rt.inode_bmp_lock);
-	//TODO: init the range lock list here
-	ctfs_file_range_lock_init();
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return 0;
 }
@@ -351,7 +349,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	timer_start();
 #endif
 	//TODO: check and get Read lock here
-	ctfs_file_range_lock_acquire(fd, offset, count, 0);
+	ct_fl_t *current_fl = ctfs_file_range_lock_acquire(fd, offset, count, 0);
 	if(count > PMD_SIZE){
 		big_memcpy(buf, target + offset, count);
 	}
@@ -359,7 +357,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 		memcpy(buf, target + offset, count);
 	}
 	//TODO: release the lock here if possible
-	ctfs_file_range_lock_release(fd, offset, count, 0);
+	ctfs_file_range_lock_release(current_fl);
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
@@ -420,10 +418,10 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 	timer_start();
 #endif
 	//TODO: check and get write lock here
-	ctfs_file_range_lock_acquire(fd, offset, count, 1);
+	ct_fl_t *current_fl = ctfs_file_range_lock_acquire(fd, offset, count, 1);
 	avx_cpy(addr_base + offset, buf, count);
 	//TODO: release the write lock here
-	ctfs_file_range_lock_release(fd, offset, count, 1);
+	ctfs_file_range_lock_release(current_fl);
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
