@@ -94,7 +94,7 @@ static inline ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, in
     temp->fl_type = flag;
     temp->fl_fd = fd;
     temp->fl_start = start;
-    temp->fl_end = start + n - 1;
+    temp->fl_end = start + n;
 
     while(TEST_AND_SET(&ct_rt.fd[fd].fl_lock));
 
@@ -184,5 +184,5 @@ void ctfs_file_range_lock_release_all(int fd){
     ct_rt.fd[fd].fl = NULL;
 
     TEST_AND_SET_RELEASE(&ct_rt.fd[fd].fl_lock);
-    
+
 }
