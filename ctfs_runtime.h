@@ -3,6 +3,7 @@
 
 #include "ctfs_format.h"
 
+struct ct_fl_t;
 
 /* File descriptor */
 struct ct_fd_t{
@@ -16,12 +17,13 @@ struct ct_fd_t{
 	uint64_t		cpy_time;
 	uint64_t		pswap_time;
 #endif
+	struct ct_fl_t *fl; // file range lock
+	volatile int    fl_lock;
 };
 typedef struct ct_fd_t ct_fd_t;
 
 /* end of in-RAM structures */
 struct failsafe_frame;
-struct ct_fl_t;
 
 struct ct_runtime{
 	uint64_t            base_addr;
@@ -52,9 +54,6 @@ struct ct_runtime{
 	char 				open_lock_padding[56];
 	ctfs_lock_t			open_lock;
 	char 				open_lock_padding_[60];
-	//TODO: implement range lock list here
-	struct ct_fl_t*			file_range_lock[CT_MAX_FD];
-	//one entry per inode
 
 	// ppg lock
 	uint64_t			pgg_lock;
