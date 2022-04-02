@@ -18,6 +18,7 @@ typedef struct ct_fl_seg{
     struct ct_fl_seg *next;
     struct ct_fl_t *addr;
 };
+typedef struct ct_fl_seg ct_fl_seg;
 
 /* File lock */
 typedef struct ct_fl_t {
@@ -33,6 +34,7 @@ typedef struct ct_fl_t {
     unsigned int fl_start;          /* starting address of the range lock*/
     unsigned int fl_end;            /* ending address of the range lock*/
 };
+typedef struct ct_fl_t ct_fl_t;
 
 /* Atomic functions */
 #define TEST_AND_SET(addr)                               \
