@@ -35,6 +35,7 @@ typedef struct ct_fl_t {
     unsigned int fl_end;            /* ending address of the range lock*/
 };
 typedef struct ct_fl_t ct_fl_t;
+const ct_fl_t* head;
 
 /* Atomic functions */
 #define TEST_AND_SET(addr)                               \
@@ -63,8 +64,6 @@ void ctfs_file_range_lock_release(int fd, ct_fl_t *node);
 void ctfs_file_range_lock_release_all(int fd);
 
 /* Link list functions */
-
-const ct_fl_t* head;
 
 static inline int check_overlap(struct ct_fl_t *lock1, struct ct_fl_t *lock2){
     return ((lock1->fl_start <= lock2->fl_start) && (lock1->fl_end >= lock2->fl_start)) ||\
