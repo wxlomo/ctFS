@@ -57,7 +57,7 @@ int ct_time_greater(struct timespec * time1, struct timespec * time2){
 
 ct_fl_t* ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...){
     ct_fl_t *temp = ctfs_lock_list_add_node(fd, start, n, flag);
-    while(node->fl_block != NULL){
+    while(temp->fl_block != NULL){
         FENCE();
     }
     return temp;
