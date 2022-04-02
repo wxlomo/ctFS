@@ -60,7 +60,7 @@ ct_fl_t* ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag);
 
 ct_fl_t* ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag);
 
-int ctfs_file_range_lock_release(int fd, ct_fl_t *node);
+void ctfs_file_range_lock_release(int fd, ct_fl_t *node);
 
 void ctfs_file_range_lock_release_all(int fd);
 

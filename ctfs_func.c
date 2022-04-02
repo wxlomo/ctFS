@@ -342,10 +342,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	inode_rw_lock(inode_n);
 	if(offset >= ct_rt.fd[fd].inode->i_size){
 		inode_rw_unlock(inode_n);
-		if(!ctfs_file_range_lock_release(fd, current_fl)){
-			ct_rt.errorn = EINVAL;
-			return -1;
-		}
+		ctfs_file_range_lock_release(fd, current_fl);
 		return 0;
 	}
 	else if(offset + count >= ct_rt.fd[fd].inode->i_size){
@@ -365,10 +362,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
-	if(!ctfs_file_range_lock_release(fd, current_fl)){
-		ct_rt.errorn = EINVAL;
-		return -1;
-	}
+	ctfs_file_range_lock_release(fd, current_fl);
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return count;
 }
@@ -430,10 +424,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
-	if(!ctfs_file_range_lock_release(fd, current_fl)){
-		ct_rt.errorn = EINVAL;
-		return -1;
-	}
+	ctfs_file_range_lock_release(fd, current_fl);
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return count;
 }
