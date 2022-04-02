@@ -11,7 +11,7 @@
 
 /* Link list functions */
 
-const ct_fl_t* head;
+ct_fl_t* head;
 
 static inline int check_overlap(struct ct_fl_t *lock1, struct ct_fl_t *lock2){
     return ((lock1->fl_start <= lock2->fl_start) && (lock1->fl_end >= lock2->fl_start)) ||\
