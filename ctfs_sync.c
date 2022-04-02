@@ -25,10 +25,6 @@ inline void bit_lock_release(uint64_t *addr, uint64_t num){
     FETCH_AND_unSET_BIT(addr, num);
 }
 
-/************************************************ 
- * Implement read and write lock
- ************************************************/
-
 // inline void ctfs_read_lock_acquire(ct_fl_t *lock){
 //     for(;;){
 //         while(lock->fl_wcount){  /* write lock acquired */
