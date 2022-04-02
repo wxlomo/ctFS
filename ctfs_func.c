@@ -335,9 +335,9 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 #ifdef CTFS_DEBUG
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
-	inode_rw_lock(inode_n);
+	ct_fl_t *current_fl = ctfs_file_range_lock_acquire(fd, offset, count, 0);
 	if(offset >= ct_rt.fd[fd].inode->i_size){
-		inode_rw_unlock(inode_n);
+		ctfs_file_range_lock_release(current_fl);
 		return 0;
 	}
 	else if(offset + count >= ct_rt.fd[fd].inode->i_size){
@@ -348,20 +348,16 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 #ifdef CTFS_DEBUG
 	timer_start();
 #endif
-	//TODO: check and get Read lock here
-	ct_fl_t *current_fl = ctfs_file_range_lock_acquire(fd, offset, count, 0);
 	if(count > PMD_SIZE){
 		big_memcpy(buf, target + offset, count);
 	}
 	else{
 		memcpy(buf, target + offset, count);
 	}
-	//TODO: release the lock here if possible
-	ctfs_file_range_lock_release(current_fl);
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
-	inode_rw_unlock(inode_n);
+	ctfs_file_range_lock_release(current_fl);
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return count;
 }
@@ -395,6 +391,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
+	ct_fl_t *current_fl = ctfs_file_range_lock_acquire(fd, offset, count, 1);
 	inode_rw_lock(inode_n);
 	end = offset + count;
 	if(unlikely(end > ct_rt.fd[fd].inode->i_size)){		//if requested write range is beyond existing inode size
@@ -411,21 +408,18 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #endif
 	}
 	void * addr_base = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
+	inode_rw_unlock(inode_n);
 #ifdef CTFS_DEBUG
 	ino = *ct_rt.fd[fd].inode;
 #endif
 #ifdef CTFS_DEBUG
 	timer_start();
 #endif
-	//TODO: check and get write lock here
-	ct_fl_t *current_fl = ctfs_file_range_lock_acquire(fd, offset, count, 1);
 	avx_cpy(addr_base + offset, buf, count);
-	//TODO: release the write lock here
-	ctfs_file_range_lock_release(current_fl);
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
-	inode_rw_unlock(inode_n);
+	ctfs_file_range_lock_release(current_fl);
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return count;
 }
