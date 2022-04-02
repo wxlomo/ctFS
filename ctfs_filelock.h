@@ -14,7 +14,7 @@
 
 struct ct_fl_t;
 
-/* block list and wait list segments */
+/* Block list and wait list segments */
 struct ct_fl_seg{
     struct ct_fl_seg *prev;
     struct ct_fl_seg *next;

@@ -21,9 +21,6 @@ __sync_and_and_fetch((char*) (((uint64_t)addr)+(num/8)),      \
 
 typedef volatile int ctfs_lock_t;
 
-struct ct_fl_t;
-typedef struct ct_fl_t ct_fl_t;
-
 //NOTE: the current open lock is implemented with the following spain locks below
 #define ctfs_lock_try(lock)     pthread_spin_trylock(&lock)
 #define ctfs_lock_acquire(lock) pthread_spin_lock(&lock)
