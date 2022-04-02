@@ -65,7 +65,7 @@ void ctfs_file_range_lock_release(int fd, ct_fl_t *node);
 void ctfs_file_range_lock_release_all(int fd);
 
 /* Link list functions */
-s
+
 ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag);
 
 void ctfs_lock_list_remove_node(int fd, ct_fl_t *node);
