@@ -83,6 +83,11 @@ void ctfs_file_range_lock_release_all(int fd){
  * Implement range lock mechanism functions
  ************************************************/
 
+inline int ctfs_block_list_is_empty(ct_fl_t *node){
+    if(node1->fl_block == NULL) return 1;
+    else return 0;
+}
+
 inline int check_overlap(struct ct_fl_t *lock1, struct ct_fl_t *lock2){
     return ((lock1->fl_start <= lock2->fl_start) && (lock1->fl_end >= lock2->fl_start)) ||\
     ((lock2->fl_start <= lock1->fl_start) && (lock2->fl_end >= lock1->fl_start));
