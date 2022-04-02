@@ -66,7 +66,7 @@ void ctfs_file_range_lock_release_all(int fd);
 
 /* Link list functions */
 
-ct_fl_t* head;
+const ct_fl_t* head;
 
 static inline int check_overlap(struct ct_fl_t *lock1, struct ct_fl_t *lock2){
     return ((lock1->fl_start <= lock2->fl_start) && (lock1->fl_end >= lock2->fl_start)) ||\
