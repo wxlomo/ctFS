@@ -55,19 +55,6 @@ int ct_time_greater(struct timespec * time1, struct timespec * time2){
  * Implement actual range lock
  ************************************************/
 
-char* enum_to_string(int mode){
-    switch(mode){
-        case O_RDONLY:
-            return "O_RDONLY";
-        case O_WRONLY:
-            return "O_WRONLY";
-        case O_RDWR:
-            return "O_RDWR";
-        default:
-            return "UNKNOWN";
-    }
-}
-
 ct_fl_t* ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...){
     ct_fl_t *temp = ctfs_lock_list_add_node(fd, start, n, flag);
     while(!ctfs_block_list_is_empty(temp)){
@@ -158,7 +145,6 @@ inline void ctfs_lock_remove_blocking(ct_fl_t *current){
             }
             temp1 = temp1->next;
         }
-        printf("\tNode %p removed from Node %p blocking list\n", current, temp);
         if(temp->next == NULL){ //last member in waiting list
             free(temp);
             current->fl_wait = NULL;
@@ -192,9 +178,7 @@ ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
             //check if current list contains a lock that is not compatable
             if(check_overlap(tail, temp) && check_access_conflict(tail, temp)){
                 ctfs_lock_add_blocking(temp, tail); //add the conflicted lock into blocking list
-                printf("\tNode %p is blocking the Node %p\n", tail, temp);
                 ctfs_lock_add_waiting(temp, tail); //add the new node to the waiting list of the conflicted node
-                printf("\tNode %p is waiting the Node %p\n", tail, temp);
             }
             last = tail;
             tail = tail->fl_next;
@@ -204,7 +188,6 @@ ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
     } else {
         head = temp;
     }
-    printf("Node %p added, Range: %u - %u, mode: %s\n", temp, temp->fl_start, temp->fl_end, enum_to_string(temp->fl_type));
    
     pthread_mutex_unlock(&lock_list_mutex);
     //pthread_spin_unlock(&lock_list_spin);
@@ -234,41 +217,9 @@ void ctfs_lock_list_remove_node(ct_fl_t *node){
             next->fl_prev = prev;
     }
     ctfs_lock_remove_blocking(node);
-    printf("Node %p removed, Range: %u - %u, mode: %s\n", node, node->fl_start, node->fl_end, enum_to_string(node->fl_type));
 
     pthread_mutex_unlock(&lock_list_mutex);
     //pthread_spin_unlock(&lock_list_spin);
 
     free(node);
-}
-
-void print_all_info(){
-    ct_fl_t *temp1;
-    ct_fl_seg *temp2;
-
-    //pthread_spin_lock(&lock_list_spin);
-    pthread_mutex_lock(&lock_list_mutex);
-    temp1 = head;
-    printf("*********************** Final List ***********************\n");
-    while(temp1 != NULL){
-        printf("Node: %p, Range: %u - %u, mode: %s ===>\n", temp1, temp1->fl_start, temp1->fl_end, enum_to_string(temp1->fl_type));
-
-        temp2 = temp1->fl_wait;
-        while(temp2 != NULL){
-            printf("\tWaiting by: Node %p, Range: %u - %u, mode: %s\n", temp2->addr, temp2->addr->fl_start, temp2->addr->fl_end, enum_to_string(temp2->addr->fl_type));
-            temp2 = temp2->next;
-        }
-
-        temp2 = temp1->fl_block;
-        while(temp2 != NULL){
-            printf("\tBlocked by: Node %p, Range: %u - %u, mode: %s\n", temp2->addr, temp2->addr->fl_start, temp2->addr->fl_end, enum_to_string(temp2->addr->fl_type));
-            temp2 = temp2->next;
-        }
-        printf("\n");
-        temp1 = temp1->fl_next;
-    }
-    printf("**********************************************************\n");
-
-    pthread_mutex_unlock(&lock_list_mutex);
-    //pthread_spin_unlock(&lock_list_spin);
 }
