@@ -50,7 +50,6 @@ static inline void ctfs_lock_add_waiting(ct_fl_t *current, ct_fl_t *node){
 
 static inline void ctfs_lock_remove_blocking(ct_fl_t *current){
     /* remove the current node from others' blocking list*/
-    assert(current != NULL);
     ct_fl_seg *temp, *temp1, *prev, *next;
     temp = current->fl_wait;
     while(temp != NULL){    //go through all node this is waiting for current node
@@ -123,7 +122,6 @@ static inline ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, in
 
 static inline void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
     /* remove a node from the lock list upon the request */
-    assert(node != NULL);
     ct_fl_t *prev, *next;
 
     while(TEST_AND_SET(&ct_rt.file_range_lock[fd]->fl_lock));
@@ -170,6 +168,7 @@ ct_fl_t* ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int fla
 }
 
 void ctfs_file_range_lock_release(int fd, ct_fl_t *node){
+    assert (node != NULL); 
     ctfs_lock_list_remove_node(fd, node);
 }
 

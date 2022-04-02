@@ -339,15 +339,17 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
 	ct_fl_t *current_fl = ctfs_file_range_lock_acquire(fd, offset, count, 0);
+	inode_rw_lock(inode_n);
 	if(offset >= ct_rt.fd[fd].inode->i_size){
+		inode_rw_unlock(inode_n);
 		ctfs_file_range_lock_release(fd, current_fl);
 		return 0;
 	}
 	else if(offset + count >= ct_rt.fd[fd].inode->i_size){
 		count = ct_rt.fd[fd].inode->i_size - offset;
 	}
-	
 	void* target = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
+	inode_rw_unlock(inode_n);
 #ifdef CTFS_DEBUG
 	timer_start();
 #endif
