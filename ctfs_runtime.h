@@ -33,8 +33,8 @@ typedef struct ct_fl_seg ct_fl_seg;
 struct ct_fl_t {
 	struct ct_fl_t *fl_prev;
     struct ct_fl_t *fl_next;   		/* single liked list to other locks on this file */
-	struct ct_fl_seg fl_block; 		/* locks that is blocking this lock */
-	struct ct_fl_seg fl_wait; 		/* locks that is waiting for this lock*/
+	struct ct_fl_seg *fl_block; 		/* locks that is blocking this lock */
+	struct ct_fl_seg *fl_wait; 		/* locks that is waiting for this lock*/
 
     int fl_fd;    					/*  Which fd has this lock*/
 	volatile int fl_lock;			/* lock variable*/
@@ -171,7 +171,7 @@ void ctfs_file_range_lock_init();
 
 void ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...);
 
-void ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, ...);
+int ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, ...);
 
 void ctfs_file_range_lock_release(int fd, off_t start, size_t n, int flag, ...);
 

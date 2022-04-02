@@ -16,8 +16,6 @@ ct_fl_t* head;
 pthread_spinlock_t lock_list_spin;
 pthread_mutex_t lock_list_mutex;
 
-enum mode{O_RDONLY, O_WRONLY, O_RDWR};
-
 struct timespec stopwatch_start;
 struct timespec stopwatch_stop;
 
@@ -94,7 +92,7 @@ void ctfs_file_range_lock_release(int fd, off_t start, size_t n, int flag, ...){
 
 void ctfs_file_range_lock_release_all(int fd){
     for(ct_fl_t *temp = ct_rt.file_range_lock[fd]->fl_next; temp->fl_next != NULL; temp = temp->fl_next){
-        free(temp->fl)
+        free(temp->fl_lock);
     }
 }
 
@@ -188,7 +186,6 @@ ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
     temp->fl_fd = fd;
     temp->fl_start = start;
     temp->fl_end = start + n - 1;
-    temp->node_id = temp;
 
     //pthread_spin_lock(&lock_list_spin);
     pthread_mutex_lock(&lock_list_mutex);
@@ -270,17 +267,17 @@ void print_all_info(){
     temp1 = head;
     printf("*********************** Final List ***********************\n");
     while(temp1 != NULL){
-        printf("Node: %p, Range: %u - %u, mode: %s ===>\n", temp1->node_id, temp1->fl_start, temp1->fl_end, enum_to_string(temp1->fl_type));
+        printf("Node: %p, Range: %u - %u, mode: %s ===>\n", temp1, temp1->fl_start, temp1->fl_end, enum_to_string(temp1->fl_type));
 
         temp2 = temp1->fl_wait;
         while(temp2 != NULL){
-            printf("\tWaiting by: Node %p, Range: %u - %u, mode: %s\n", temp2->addr->node_id, temp2->addr->fl_start, temp2->addr->fl_end, enum_to_string(temp2->addr->fl_type));
+            printf("\tWaiting by: Node %p, Range: %u - %u, mode: %s\n", temp2->addr, temp2->addr->fl_start, temp2->addr->fl_end, enum_to_string(temp2->addr->fl_type));
             temp2 = temp2->next;
         }
 
         temp2 = temp1->fl_block;
         while(temp2 != NULL){
-            printf("\tBlocked by: Node %p, Range: %u - %u, mode: %s\n", temp2->addr->node_id, temp2->addr->fl_start, temp2->addr->fl_end, enum_to_string(temp2->addr->fl_type));
+            printf("\tBlocked by: Node %p, Range: %u - %u, mode: %s\n", temp2->addr, temp2->addr->fl_start, temp2->addr->fl_end, enum_to_string(temp2->addr->fl_type));
             temp2 = temp2->next;
         }
         printf("\n");
