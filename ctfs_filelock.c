@@ -1,13 +1,18 @@
+/************************************************ 
+ * ctfs_filelock.c
+ * ctFS File Range Lock Implementation
+ * 
+ * Editor : Siyan Zhang
+ *          Weixuan Yang
+ *          Hongjian Zhu
+ ************************************************/
+
 #include "ctfs_filelock.h"
 
 ct_runtime_t ct_rt;
 ct_fl_t* head;
-pthread_spinlock_t lock_list_spin;
-pthread_mutex_t lock_list_mutex;
 
-/************************************************ 
- * Implement actual range lock
- ************************************************/
+/* Range lock functions */
 
 ct_fl_t* ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...){
     ct_fl_t *temp = ctfs_lock_list_add_node(fd, start, n, flag);
@@ -23,8 +28,8 @@ ct_fl_t* ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int fla
     else return NULL;
 }
 
-void ctfs_file_range_lock_release(ct_fl_t *node){
-    ctfs_lock_list_remove_node(node);
+void ctfs_file_range_lock_release(int fd, ct_fl_t *node){
+    ctfs_lock_list_remove_node(fd, node);
 }
 
 void ctfs_file_range_lock_release_all(int fd){
@@ -33,9 +38,7 @@ void ctfs_file_range_lock_release_all(int fd){
     }
 }
 
-/************************************************ 
- * Implement range lock mechanism functions
- ************************************************/
+/* Link list functions */
 
 inline int check_overlap(struct ct_fl_t *lock1, struct ct_fl_t *lock2){
     return ((lock1->fl_start <= lock2->fl_start) && (lock1->fl_end >= lock2->fl_start)) ||\
@@ -123,8 +126,7 @@ ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
     temp->fl_start = start;
     temp->fl_end = start + n - 1;
 
-    //pthread_spin_lock(&lock_list_spin);
-    pthread_mutex_lock(&lock_list_mutex);
+    while(TEST_AND_SET(&ct_rt.file_range_lock[fd]->fl_lock));
 
     if(head != NULL){
         tail = head;   //get the head of the lock list
@@ -143,19 +145,18 @@ ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
         head = temp;
     }
    
-    pthread_mutex_unlock(&lock_list_mutex);
-    //pthread_spin_unlock(&lock_list_spin);
+    TEST_AND_SET_RELEASE(&ct_rt.file_range_lock[fd]->fl_lock);
 
     return temp;
 }
 
-void ctfs_lock_list_remove_node(ct_fl_t *node){
+void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
     /* remove a node from the lock list upon the request */
     assert(node != NULL);
     ct_fl_t *prev, *next;
 
-    //pthread_spin_lock(&lock_list_spin);
-    pthread_mutex_lock(&lock_list_mutex);
+    while(TEST_AND_SET(&ct_rt.file_range_lock[fd]->fl_lock));
+
     prev = node->fl_prev;
     next = node->fl_next;
     if (prev == NULL){
@@ -172,8 +173,7 @@ void ctfs_lock_list_remove_node(ct_fl_t *node){
     }
     ctfs_lock_remove_blocking(node);
 
-    pthread_mutex_unlock(&lock_list_mutex);
-    //pthread_spin_unlock(&lock_list_spin);
+    TEST_AND_SET_RELEASE(&ct_rt.file_range_lock[fd]->fl_lock);
 
     free(node);
 }

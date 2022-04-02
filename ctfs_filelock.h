@@ -1,8 +1,16 @@
+/************************************************ 
+ * ctfs_filelock.h
+ * ctFS File Range Lock Implementation
+ * 
+ * Editor : Siyan Zhang
+ *          Weixuan Yang
+ *          Hongjian Zhu
+ ************************************************/
+
 #ifndef CTFS_FILELOCK_H
 #define CTFS_FILELOCK_H
 
 #include "ctfs_runtime.h"
-#include <pthread.h>
 
 struct ct_fl_t;
 
@@ -30,10 +38,7 @@ struct ct_fl_t {
 };
 typedef struct ct_fl_t ct_fl_t;
 
-/************************************************ 
- * Implement atomic functions for file range lock
- ************************************************/
-// TODO: defince range lock macros here, maybe use "__sync_fetch_and_add"
+/* Atomic functions */
 #define TEST_AND_SET(addr)                               \
 __sync_lock_test_and_set(addr, 1)
 
@@ -49,27 +54,23 @@ __sync_fetch_and_sub(addr, 1)
 #define FENCE()                                          \
 __sync_synchronize()
 
-/************************************************ 
- * Implement actual range lock
- ************************************************/
+/* Range lock functions */
 
 ct_fl_t* ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...);
 
 ct_fl_t* ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int flag, ...);
 
-void ctfs_file_range_lock_release(ct_fl_t *node);
+void ctfs_file_range_lock_release(int fd, ct_fl_t *node);
 
 void ctfs_file_range_lock_release_all(int fd);
 
-/************************************************ 
- * Implement range lock mechanism functions
- ************************************************/
+/* Link list functions */
 
 ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag);
 
 ct_fl_t* ctfs_lock_list_find_node(int fd, off_t start, size_t n, int flag);
 
-void ctfs_lock_list_remove_node(ct_fl_t *node);
+void ctfs_lock_list_remove_node(int fd, ct_fl_t *node);
 
 void print_all_info();
 
