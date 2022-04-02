@@ -9,9 +9,6 @@
 
 #include "ctfs_filelock.h"
 
-ct_runtime_t ct_rt;
-ct_fl_t* head;
-
 /* Range lock functions */
 
 ct_fl_t* ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...){

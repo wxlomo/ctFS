@@ -10,6 +10,8 @@
 uint64_t ctfs_debug_temp;
 #endif
 
+ct_runtime_t ct_rt;
+
 struct timespec stopwatch_start;
 struct timespec stopwatch_stop;
 
