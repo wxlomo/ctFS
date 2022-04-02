@@ -57,7 +57,7 @@ int ct_time_greater(struct timespec * time1, struct timespec * time2){
 
 ct_fl_t* ctfs_file_range_lock_acquire(int fd, off_t start, size_t n, int flag, ...){
     ct_fl_t *temp = ctfs_lock_list_add_node(fd, start, n, flag);
-    while(!ctfs_block_list_is_empty(temp)){
+    while(node->fl_block != NULL){
         FENCE();
     }
     return temp;
@@ -82,11 +82,6 @@ void ctfs_file_range_lock_release_all(int fd){
 /************************************************ 
  * Implement range lock mechanism functions
  ************************************************/
-
-inline int ctfs_block_list_is_empty(ct_fl_t *node){
-    if(node->fl_block == NULL) return 1;
-    else return 0;
-}
 
 inline int check_overlap(struct ct_fl_t *lock1, struct ct_fl_t *lock2){
     return ((lock1->fl_start <= lock2->fl_start) && (lock1->fl_end >= lock2->fl_start)) ||\
