@@ -21,6 +21,7 @@ typedef struct ct_fd_t ct_fd_t;
 
 /* end of in-RAM structures */
 struct failsafe_frame;
+struct ct_fl_t;
 
 struct ct_runtime{
 	uint64_t            base_addr;
@@ -52,7 +53,7 @@ struct ct_runtime{
 	ctfs_lock_t			open_lock;
 	char 				open_lock_padding_[60];
 	//TODO: implement range lock list here
-	ct_fl_t*			file_range_lock[CT_MAX_FD];
+	struct ct_fl_t*			file_range_lock[CT_MAX_FD];
 	//one entry per inode
 
 	// ppg lock
