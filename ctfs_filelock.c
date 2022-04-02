@@ -167,9 +167,10 @@ ct_fl_t* ctfs_file_range_lock_try_acquire(int fd, off_t start, size_t n, int fla
     else return NULL;
 }
 
-void ctfs_file_range_lock_release(int fd, ct_fl_t *node){
-    assert (node != NULL); 
+int ctfs_file_range_lock_release(int fd, ct_fl_t *node){
+    if(node == NULL) return 0;
     ctfs_lock_list_remove_node(fd, node);
+    return 1;
 }
 
 void ctfs_file_range_lock_release_all(int fd){
