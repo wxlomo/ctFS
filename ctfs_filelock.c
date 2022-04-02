@@ -11,8 +11,6 @@
 
 /* Link list functions */
 
-ct_fl_t* head;
-
 static inline int check_overlap(struct ct_fl_t *lock1, struct ct_fl_t *lock2){
     return ((lock1->fl_start <= lock2->fl_start) && (lock1->fl_end >= lock2->fl_start)) ||\
     ((lock2->fl_start <= lock1->fl_start) && (lock2->fl_end >= lock1->fl_start));
@@ -101,8 +99,8 @@ static inline ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, in
 
     while(TEST_AND_SET(&ct_rt.file_range_lock[fd]->fl_lock));
 
-    if(head != NULL){
-        tail = head;   //get the head of the lock list
+    if(ct_rt.file_range_lock[fd] != NULL){
+        tail = ct_rt.file_range_lock[fd];   //get the head of the lock list
         while(tail != NULL){
             //check if current list contains a lock that is not compatable
             if(check_overlap(tail, temp) && check_access_conflict(tail, temp)){
@@ -115,7 +113,7 @@ static inline ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, in
         temp->fl_prev = last;
         last->fl_next = temp;
     } else {
-        head = temp;
+        ct_rt.file_range_lock[fd] = temp;
     }
    
     TEST_AND_SET_RELEASE(&ct_rt.file_range_lock[fd]->fl_lock);
@@ -134,9 +132,9 @@ static inline void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
     next = node->fl_next;
     if (prev == NULL){
         if(next == NULL)
-            head = NULL;    //last one member in the lock list;
+            ct_rt.file_range_lock[fd] = NULL;    //last one member in the lock list;
         else{
-            head = next;    //delete the very first node in list
+            ct_rt.file_range_lock[fd] = next;    //delete the very first node in list
             next->fl_prev = NULL;
         }
     } else {
@@ -173,4 +171,5 @@ void ctfs_file_range_lock_release_all(int fd){
     for(ct_fl_t *temp = ct_rt.file_range_lock[fd]->fl_next; temp->fl_next != NULL; temp = temp->fl_next){
         free(temp);
     }
+    ct_rt.file_range_lock[fd] = NULL;
 }
