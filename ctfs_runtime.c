@@ -84,7 +84,7 @@ void ctfs_file_range_lock_release_all(int fd){
  ************************************************/
 
 inline int ctfs_block_list_is_empty(ct_fl_t *node){
-    if(node1->fl_block == NULL) return 1;
+    if(node->fl_block == NULL) return 1;
     else return 0;
 }
 
