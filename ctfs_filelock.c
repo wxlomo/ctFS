@@ -22,7 +22,7 @@ static inline int check_access_conflict(struct ct_fl_t *node1, struct ct_fl_t *n
 }
 
 static inline void ctfs_lock_add_blocking(ct_fl_t *current, ct_fl_t *node){
-    /* add the conflicted node into the head of the blocking list of the current node*/
+    /* add the conflicted node into the head of the blocking list of the current node */
     ct_fl_seg *temp;
     temp = (ct_fl_seg*)malloc(sizeof(ct_fl_seg));
     temp->prev = NULL;
@@ -36,7 +36,7 @@ static inline void ctfs_lock_add_blocking(ct_fl_t *current, ct_fl_t *node){
 }
 
 static inline void ctfs_lock_add_waiting(ct_fl_t *current, ct_fl_t *node){
-    /*add the current node to the wait list head of the conflicted node*/
+    /* add the current node to the wait list head of the conflicted node */
     ct_fl_seg *temp;
     temp = (ct_fl_seg*)malloc(sizeof(ct_fl_seg));
     temp->prev = NULL;
@@ -49,7 +49,7 @@ static inline void ctfs_lock_add_waiting(ct_fl_t *current, ct_fl_t *node){
 }
 
 static inline void ctfs_lock_remove_blocking(ct_fl_t *current){
-    /* remove the current node from others' blocking list*/
+    /* remove the current node from others' blocking list */
     ct_fl_seg *temp, *temp1, *prev, *next;
     temp = current->fl_wait;
     while(temp != NULL){    //go through all node this is waiting for current node
