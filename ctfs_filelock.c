@@ -181,6 +181,7 @@ void ctfs_file_range_lock_release_all(int fd){
     for(ct_fl_t *temp = ct_rt.fd[fd].fl->fl_next; temp->fl_next != NULL; temp = temp->fl_next){
         free(temp);
     }
+    free(ct_rt.fd[fd].fl);
     ct_rt.fd[fd].fl = NULL;
 
     TEST_AND_SET_RELEASE(&ct_rt.fd[fd].fl_lock);
