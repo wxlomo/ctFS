@@ -302,7 +302,6 @@ int ctfs_close(int fd){
 		ct_rt.errorn = EBADF;
 		return -1;
 	}
-	//TODO: the associated locks of the file must be released here.
 	ctfs_file_range_lock_release_all(fd);
 	ct_rt.fd[fd].inode = 0;
 #ifdef CTFS_DEBUG
@@ -338,7 +337,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 #ifdef CTFS_DEBUG
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
-	ct_fl_t *current_fl = ctfs_file_range_lock_acquire(fd, offset, count, O_RDONLY); // request read lock
+	ct_fl_t *current_fl = ctfs_file_range_lock_acquire(fd, offset, count, O_RDONLY); // acquire read lock
 	inode_rw_lock(inode_n);
 	if(offset >= ct_rt.fd[fd].inode->i_size){
 		inode_rw_unlock(inode_n);
@@ -404,7 +403,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
-	ct_fl_t *current_fl = ctfs_file_range_lock_acquire(fd, offset, count, O_WRONLY); // request write lock
+	ct_fl_t *current_fl = ctfs_file_range_lock_acquire(fd, offset, count, O_WRONLY); // acquire write lock
 	inode_rw_lock(inode_n);
 	end = offset + count;
 	if(unlikely(end > ct_rt.fd[fd].inode->i_size)){		//if requested write range is beyond existing inode size

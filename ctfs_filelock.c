@@ -95,11 +95,9 @@ static inline ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, in
     temp->fl_fd = fd;
     temp->fl_start = start;
     temp->fl_end = start + n;
-
-    while(TEST_AND_SET(&ct_rt.fd[fd].fl_lock));
-
+    while(TEST_AND_SET(&ct_rt.fd[fd].fl_lock)); // acquire fd lock
     if(ct_rt.fd[fd].fl != NULL){
-        tail = ct_rt.fd[fd].fl;   //get the head of the lock list
+        tail = ct_rt.fd[fd].fl;   // get the head of the lock list
         while(tail != NULL){
             //check if current list contains a lock that is not compatable
             if(check_overlap(tail, temp) && check_access_conflict(tail, temp)){
@@ -114,25 +112,21 @@ static inline ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, in
     } else {
         ct_rt.fd[fd].fl = temp;
     }
-   
-    TEST_AND_SET_RELEASE(&ct_rt.fd[fd].fl_lock);
-
+    TEST_AND_SET_RELEASE(&ct_rt.fd[fd].fl_lock); // release fd lock
     return temp;
 }
 
 static inline void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
     /* remove a node from the lock list upon the request */
     ct_fl_t *prev, *next;
-
-    while(TEST_AND_SET(&ct_rt.fd[fd].fl_lock));
-
+    while(TEST_AND_SET(&ct_rt.fd[fd].fl_lock)); // acquire fd lock
     prev = node->fl_prev;
     next = node->fl_next;
     if (prev == NULL){
         if(next == NULL)
-            ct_rt.fd[fd].fl = NULL;    //last one member in the lock list;
+            ct_rt.fd[fd].fl = NULL;    // last one member in the lock list;
         else{
-            ct_rt.fd[fd].fl = next;    //delete the very first node in list
+            ct_rt.fd[fd].fl = next;    // delete the very first node in list
             next->fl_prev = NULL;
         }
     } else {
@@ -141,10 +135,8 @@ static inline void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
             next->fl_prev = prev;
     }
     ctfs_lock_remove_blocking(node);
-
-    TEST_AND_SET_RELEASE(&ct_rt.fd[fd].fl_lock);
-
     free(node);
+    TEST_AND_SET_RELEASE(&ct_rt.fd[fd].fl_lock); // release fd lock
 }
 
 /* Range lock functions */
@@ -175,15 +167,7 @@ int ctfs_file_range_lock_release(int fd, ct_fl_t *node){
 }
 
 void ctfs_file_range_lock_release_all(int fd){
-
     while(TEST_AND_SET(&ct_rt.fd[fd].fl_lock));
-
-    for(ct_fl_t *temp = ct_rt.fd[fd].fl->fl_next; temp->fl_next != NULL; temp = temp->fl_next){
-        free(temp);
-    }
-    free(ct_rt.fd[fd].fl);
     ct_rt.fd[fd].fl = NULL;
-
     TEST_AND_SET_RELEASE(&ct_rt.fd[fd].fl_lock);
-
 }
