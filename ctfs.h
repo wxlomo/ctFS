@@ -6,7 +6,6 @@
 #include <inttypes.h>
 #include <linux/magic.h>
 #include <linux/falloc.h>
-#include <linux/fs.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -22,6 +21,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
+
 
 #define CTFS_MKFS_FLAG_RESET_DAX        0x01
 
