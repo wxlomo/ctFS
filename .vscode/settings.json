@@ -9,6 +9,7 @@
         "xiosbase": "c",
         "xlocmon": "c",
         "xlocnum": "c",
-        "xstring": "c"
+        "xstring": "c",
+        "xutility": "c"
     }
 }
