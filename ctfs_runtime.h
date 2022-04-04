@@ -16,9 +16,6 @@ struct ct_fd_t{
 	uint64_t		cpy_time;
 	uint64_t		pswap_time;
 #endif
-	//range lock
-	ct_fl_t*            fl;		 //one list per opened file
-	uint64_t            fl_lock; //one lock per list
 };
 typedef struct ct_fd_t ct_fd_t;
 
@@ -57,6 +54,11 @@ struct ct_runtime{
 	// ppg lock
 	uint64_t			pgg_lock;
 	char				pgg_lock_padding[56];
+
+	//range lock
+	ct_fl_t*            fl;		  //one list per opened file
+	uint64_t            fl_lock;  //one lock per list
+
 	// failsafe
 	uint64_t			failsafe_clock;
 	struct failsafe_frame* failsafe_frame;
