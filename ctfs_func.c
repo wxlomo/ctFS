@@ -109,6 +109,7 @@ int ctfs_init(int flag){
 	ct_rt.current_dir = &ct_rt.inode_start[ct_rt.super_blk->root_inode];
 	ctfs_lock_init(ct_rt.open_lock);
 	ctfs_lock_init(ct_rt.inode_bmp_lock);
+	ctfs_lock_list_init();
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return 0;
 }
@@ -147,6 +148,7 @@ int ctfs_open (const char *pathname, int flags, ...){
 		return -1;
 	}
 	res = inode_path2inode(&frame);
+	pthread_mutex_init(&ct_rt.fl_lock[fd], NULL);
 	if(res){
 		ct_rt.errorn = res;
 		dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
@@ -249,6 +251,8 @@ int ctfs_close(int fd){
 		return -1;
 	}
 	ct_rt.fd[fd].inode = 0;
+	ct_rt.fl[fd] = NULL;
+	pthread_mutex_destroy(&ct_rt.fl_lock[fd]);
 #ifdef CTFS_DEBUG
 	printf("closed fd: %d\n", fd);
 #endif
@@ -277,21 +281,26 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	else if(offset + count >= ct_rt.fd[fd].inode->i_size){
 		count = ct_rt.fd[fd].inode->i_size - offset;
 	}
-	
 	void* target = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
+	inode_rw_unlock(inode_n);
+
 #ifdef CTFS_DEBUG
 	timer_start();
 #endif
+
+	ct_fl_t *node1 = ctfs_rlock_lock(fd, offset, count, O_RDONLY);
 	if(count > PMD_SIZE){
 		big_memcpy(buf, target + offset, count);
 	}
 	else{
 		memcpy(buf, target + offset, count);
 	}
+	ctfs_rlock_unlock(fd, node1);
+
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
-	inode_rw_unlock(inode_n);
+	
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return count;
 }
@@ -328,6 +337,9 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #endif
 	}
 	void * addr_base = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
+	inode_rw_unlock(inode_n);
+
+	ct_fl_t *node1 = ctfs_rlock_lock(fd, offset, count, O_WRONLY);
 #ifdef CTFS_DEBUG
 	ino = *ct_rt.fd[fd].inode;
 #endif
@@ -338,7 +350,8 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
-	inode_rw_unlock(inode_n);
+	ctfs_rlock_unlock(fd, node1);
+
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return count;
 }
