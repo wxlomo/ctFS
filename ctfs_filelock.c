@@ -1,4 +1,4 @@
-#include "ctfs_filelock.h"
+#include "ctfs_runtime.h"
 
 char* enum_to_string(int mode){
     switch(mode){
