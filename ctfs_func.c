@@ -294,7 +294,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	else{
 		memcpy(buf, target + offset, count);
 	}
-	ctfs_rlock_release(fd, currfl);
+	
 
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
