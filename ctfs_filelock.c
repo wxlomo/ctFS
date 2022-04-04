@@ -1,5 +1,13 @@
 #include "ctfs_runtime.h"
 
+inline void seg_lock_aquire(uint64_t* addr){
+    while(__sync_lock_test_and_set((char*) ((uint64_t)addr), (int)1));
+}
+
+inline void seg_lock_release(uint64_t* addr){
+    __sync_lock_release((char*) ((uint64_t)addr));
+}
+
 char* enum_to_string(int mode){
     switch(mode){
         case O_RDONLY:
