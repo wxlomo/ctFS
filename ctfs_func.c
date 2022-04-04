@@ -320,7 +320,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
-	ct_fl_t *currfl = ctfs_rlock_acquire(fd, offset, count, O_WRONLY);
+	
 	inode_rw_lock(inode_n);
 	end = offset + count;
 	if(unlikely(end > ct_rt.fd[fd].inode->i_size)){
@@ -349,7 +349,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
-	ctfs_rlock_release(fd, currfl);
+	
 
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return count;
