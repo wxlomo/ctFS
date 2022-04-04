@@ -102,7 +102,7 @@ ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
     temp->fl_end = start + n - 1;
     temp->node_id = temp;
 
-    TEST_AND_SET(&ct_rt.fl_lock[fd]);
+    while(TEST_AND_SET(&ct_rt.fl_lock[fd]));
 
     if(ct_rt.fl[fd] != NULL){
         tail = ct_rt.fl[fd];   //get the head of the lock list
@@ -133,7 +133,7 @@ void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
     assert(node != NULL);
     ct_fl_t *prev, *next;
 
-    TEST_AND_SET(&ct_rt.fl_lock[fd]);
+    while(TEST_AND_SET(&ct_rt.fl_lock[fd]));
 
     prev = node->fl_prev;
     next = node->fl_next;
