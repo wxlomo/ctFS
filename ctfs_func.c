@@ -109,7 +109,7 @@ int ctfs_init(int flag){
 	ct_rt.current_dir = &ct_rt.inode_start[ct_rt.super_blk->root_inode];
 	ctfs_lock_init(ct_rt.open_lock);
 	ctfs_lock_init(ct_rt.inode_bmp_lock);
-	ctfs_lock_list_init();
+	ctfs_lock_list_init(0);
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return 0;
 }
@@ -250,7 +250,7 @@ int ctfs_close(int fd){
 		return -1;
 	}
 	ct_rt.fd[fd].inode = 0;
-	ct_rt.fl[fd] = NULL;
+	ctfs_lock_list_init(fd);
 #ifdef CTFS_DEBUG
 	printf("closed fd: %d\n", fd);
 #endif

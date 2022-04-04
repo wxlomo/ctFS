@@ -36,7 +36,7 @@ struct ct_fl_t {
 typedef struct ct_fl_t ct_fl_t;
 
 /*range lock related functions*/
-void ctfs_lock_list_init();                                              // initialization
+void ctfs_lock_list_init(int fd);                                        // initialization
 ct_fl_t*  ctfs_rlock_lock(int fd, off_t offset, size_t count, int flag); // acquire a range lock, return the address of the lock
 void ctfs_rlock_unlock(int fd, ct_fl_t *node);                           // release the range lock
 

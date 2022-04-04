@@ -164,10 +164,17 @@ static inline void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
 }
 
 /* initialization */
-void ctfs_lock_list_init(){
-    for (int i = 0; i < CT_MAX_FD; i++){
-        ct_rt.fd[i].fl = NULL;
-        ct_rt.fd[i].fl_lock = 0;
+void ctfs_lock_list_init(int fd){
+    switch(fd){
+        case 0: // all
+            for (int i = 0; i < CT_MAX_FD; i++){
+                ct_rt.fd[i].fl = NULL;
+                ct_rt.fd[i].fl_lock = 0;
+            }
+            break;
+        default:
+            ct_rt.fd[fd].fl = NULL;
+            ct_rt.fd[fd].fl_lock = 0;
     }
 }
 
