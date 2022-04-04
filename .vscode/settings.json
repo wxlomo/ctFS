@@ -1,0 +1,14 @@
+{
+    "C_Cpp.dimInactiveRegions": false,
+    "files.associations": {
+        "chrono": "c",
+        "filesystem": "c",
+        "iomanip": "c",
+        "istream": "c",
+        "ostream": "c",
+        "xiosbase": "c",
+        "xlocmon": "c",
+        "xlocnum": "c",
+        "xstring": "c"
+    }
+}
