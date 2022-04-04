@@ -53,7 +53,7 @@ struct ct_runtime{
 	char 				open_lock_padding_[60];
 	//range lock
 	ct_fl_t*            fl[CT_MAX_FD];		//one list per opened file
-	pthread_mutex_t		fl_lock[CT_MAX_FD];	//one lock per list
+	int         		fl_lock[CT_MAX_FD];	//one lock per list
 	// ppg lock
 	uint64_t			pgg_lock;
 	char				pgg_lock_padding[56];
