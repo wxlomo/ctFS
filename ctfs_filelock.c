@@ -9,13 +9,13 @@
 
 #include "ctfs_filelock.h"
 
-/* per segment lock acquire */
-inline void seg_lock_acquire(uint64_t* addr){
+/* per lock list lock acquire */
+inline void rl_lock_acquire(uint64_t* addr){
     while(__sync_lock_test_and_set((char*) ((uint64_t)addr), (int)1));
 }
 
-/* per segment lock release */
-inline void seg_lock_release(uint64_t* addr){
+/* per lock list lock release */
+inline void rl_lock_release(uint64_t* addr){
     __sync_lock_release((char*) ((uint64_t)addr));
 }
 
@@ -31,7 +31,7 @@ inline int check_access_conflict(struct ct_fl_t *node1, struct ct_fl_t *node2){
 }
 
 /* add the conflicted node into the head of the blocking list of the current node */
-inline void ctfs_lock_add_blocking(ct_fl_t *current, ct_fl_t *node){
+inline void ctfs_rlock_add_blocking(ct_fl_t *current, ct_fl_t *node){
     ct_fl_seg *temp;
     temp = (ct_fl_seg*)malloc(sizeof(ct_fl_seg));
     temp->prev = NULL;
@@ -45,7 +45,7 @@ inline void ctfs_lock_add_blocking(ct_fl_t *current, ct_fl_t *node){
 }
 
 /* add the current node to the wait list head of the conflicted node */
-inline void ctfs_lock_add_waiting(ct_fl_t *current, ct_fl_t *node){
+inline void ctfs_rlock_add_waiting(ct_fl_t *current, ct_fl_t *node){
     ct_fl_seg *temp;
     temp = (ct_fl_seg*)malloc(sizeof(ct_fl_seg));
     temp->prev = NULL;
@@ -58,7 +58,7 @@ inline void ctfs_lock_add_waiting(ct_fl_t *current, ct_fl_t *node){
 }
 
 /* remove the current node from others' blocking list */
-inline void ctfs_lock_remove_blocking(ct_fl_t *current){
+inline void ctfs_rlock_remove_blocking(ct_fl_t *current){
     ct_fl_seg *temp, *temp1, *prev, *next;
     temp = current->fl_wait;
     while(temp != NULL){    // go through all node this is waiting for current node
@@ -93,7 +93,7 @@ inline void ctfs_lock_remove_blocking(ct_fl_t *current){
 }
 
 /* add a new node to the lock list upon the request(combined into lock_acq below) */
-static inline ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
+static inline ct_fl_t* ctfs_rlock_add_node(int fd, off_t start, size_t n, int flag){
     ct_fl_t *temp, *tail, *last;
     temp = (ct_fl_t*)malloc(sizeof(ct_fl_t));
     temp->fl_next = NULL;
@@ -106,17 +106,17 @@ static inline ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, in
     temp->fl_end = start + n - 1;
     temp->node_id = temp;
 
-    seg_lock_acquire(&ct_fl.fl_lock[fd]);
+    rl_lock_acquire(&ct_fl.fl_lock[fd]);
 
     if(ct_fl.fl[fd] != NULL){
         tail = ct_fl.fl[fd];   // get the head of the lock list
         while(tail != NULL){ // check if current list contains a lock that is not compatable
             if(check_overlap(tail, temp) && check_access_conflict(tail, temp)){
-                ctfs_lock_add_blocking(temp, tail); //add the conflicted lock into blocking list
+                ctfs_rlock_add_blocking(temp, tail); //add the conflicted lock into blocking list
 #ifdef CTFS_DEBUG
                 printf("\tNode %p is blocking the Node %p\n", tail, temp);
 #endif
-                ctfs_lock_add_waiting(temp, tail); //add the new node to the waiting list of the conflicted node
+                ctfs_rlock_add_waiting(temp, tail); //add the new node to the waiting list of the conflicted node
 #ifdef CTFS_DEBUG
                 printf("\tNode %p is waiting the Node %p\n", temp, tail);
 #endif
@@ -133,16 +133,16 @@ static inline ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, in
     printf("Node %p added, Range: %u - %u, mode: %s\n", temp, temp->fl_start, temp->fl_end, enum_to_string(temp->fl_type));
 #endif
 
-    seg_lock_release(&ct_fl.fl_lock[fd]);
+    rl_lock_release(&ct_fl.fl_lock[fd]);
 
     return temp;
 }
 
 /* remove a node from the lock list upon the request */
-static inline void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
+static inline void ctfs_rlock_remove_node(int fd, ct_fl_t *node){
     ct_fl_t *prev, *next;
 
-    seg_lock_acquire(&ct_fl.fl_lock[fd]);
+    rl_lock_acquire(&ct_fl.fl_lock[fd]);
 
     prev = node->fl_prev;
     next = node->fl_next;
@@ -158,18 +158,18 @@ static inline void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
         if (next != NULL)
             next->fl_prev = prev;
     }
-    ctfs_lock_remove_blocking(node);
+    ctfs_rlock_remove_blocking(node);
 #ifdef CTFS_DEBUG
     printf("Node %p removed, Range: %u - %u, mode: %s\n", node, node->fl_start, node->fl_end, enum_to_string(node->fl_type));
 #endif
 
-    seg_lock_release(&ct_fl.fl_lock[fd]);
+    rl_lock_release(&ct_fl.fl_lock[fd]);
 
     free(node);
 }
 
 /* initialization */
-void ctfs_lock_list_init(int fd){
+void ctfs_rlock_init(int fd){
     switch(fd){
         case 0: // all
             for (int i = 0; i < CT_MAX_FD; i++){
@@ -185,7 +185,7 @@ void ctfs_lock_list_init(int fd){
 
 /* acquire a range lock, return the address of the lock */
 ct_fl_t*  __attribute__((optimize("O0"))) ctfs_rlock_lock(int fd, off_t offset, size_t count, int flag){
-    ct_fl_t *node = ctfs_lock_list_add_node(fd, offset, count, flag);
+    ct_fl_t *node = ctfs_rlock_add_node(fd, offset, count, flag);
 	while(node->fl_block != NULL){} // wait for blocker finshed
     return node;
 }
@@ -193,5 +193,5 @@ ct_fl_t*  __attribute__((optimize("O0"))) ctfs_rlock_lock(int fd, off_t offset, 
 /* release the range lock */
 void ctfs_rlock_unlock(int fd, ct_fl_t *node){
     assert(node != NULL);
-    ctfs_lock_list_remove_node(fd, node);
+    ctfs_rlock_remove_node(fd, node);
 }
