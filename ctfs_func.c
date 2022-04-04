@@ -288,14 +288,14 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	timer_start();
 #endif
 
-	ct_fl_t *currfl = ctfs_rlock_lock(fd, offset, count, O_RDONLY);
+	ct_fl_t *currfl = ctfs_rlock_acquire(fd, offset, count, O_RDONLY);
 	if(count > PMD_SIZE){
 		big_memcpy(buf, target + offset, count);
 	}
 	else{
 		memcpy(buf, target + offset, count);
 	}
-	ctfs_rlock_unlock(fd, currfl);
+	ctfs_rlock_release(fd, currfl);
 
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
@@ -339,7 +339,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 	void * addr_base = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
 	inode_rw_unlock(inode_n);
 
-	ct_fl_t *currfl = ctfs_rlock_lock(fd, offset, count, O_WRONLY);
+	ct_fl_t *currfl = ctfs_rlock_acquire(fd, offset, count, O_WRONLY);
 #ifdef CTFS_DEBUG
 	ino = *ct_rt.fd[fd].inode;
 #endif
@@ -350,7 +350,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
-	ctfs_rlock_unlock(fd, currfl);
+	ctfs_rlock_release(fd, currfl);
 
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return count;

@@ -184,14 +184,14 @@ void ctfs_rlock_init(int fd){
 }
 
 /* acquire a range lock, return the address of the lock */
-ct_fl_t*  __attribute__((optimize("O0"))) ctfs_rlock_lock(int fd, off_t offset, size_t count, int flag){
+ct_fl_t*  __attribute__((optimize("O0"))) ctfs_rlock_acquire(int fd, off_t offset, size_t count, int flag){
     ct_fl_t *node = ctfs_rlock_add_node(fd, offset, count, flag);
 	while(node->fl_block != NULL){} // wait for blocker finshed
     return node;
 }
 
 /* release the range lock */
-void ctfs_rlock_unlock(int fd, ct_fl_t *node){
+void ctfs_rlock_release(int fd, ct_fl_t *node){
     assert(node != NULL);
     ctfs_rlock_remove_node(fd, node);
 }
