@@ -1,6 +1,6 @@
 /********************************
  * ctFS File Range Lock
- * ctfs_filelock.h
+ * ctfs_rlock.h
  * 
  * Editor: Siyan Zhang
  *         Weixuan Yang
