@@ -8,20 +8,18 @@ inline void seg_lock_release(uint64_t* addr){
     __sync_lock_release((char*) ((uint64_t)addr));
 }
 
-char* enum_to_string(int mode){
-    switch(mode){
-        case O_RDONLY:
-            return "O_RDONLY";
-        case O_WRONLY:
-            return "O_WRONLY";
-        case O_RDWR:
-            return "O_RDWR";
-        default:
-            return "UNKNOWN";
-    }
+inline int check_overlap(struct ct_fl_t *node1, struct ct_fl_t *node2){
+    /* check if two given range have conflicts */
+    return ((node1->fl_start <= node2->fl_start) && (node1->fl_end >= node2->fl_start)) ||\
+    ((node2->fl_start <= node1->fl_start) && (node2->fl_end >= node1->fl_start));
 }
 
-void ctfs_lock_add_blocking(ct_fl_t *current, ct_fl_t *node){
+inline int check_access_conflict(struct ct_fl_t *node1, struct ct_fl_t *node2){
+    /* check if two given file access mode have conflicts */
+    return !((node1->fl_type == O_RDONLY) && (node2->fl_type == O_RDONLY));
+}
+
+inline void ctfs_lock_add_blocking(ct_fl_t *current, ct_fl_t *node){
     /* add the conflicted node into the head of the blocking list of the current node*/
     ct_fl_seg *temp;
     temp = (ct_fl_seg*)malloc(sizeof(ct_fl_seg));
@@ -35,7 +33,7 @@ void ctfs_lock_add_blocking(ct_fl_t *current, ct_fl_t *node){
     current->fl_block = temp;
 }
 
-void ctfs_lock_add_waiting(ct_fl_t *current, ct_fl_t *node){
+inline void ctfs_lock_add_waiting(ct_fl_t *current, ct_fl_t *node){
     /*add the current node to the wait list head of the conflicted node*/
     ct_fl_seg *temp;
     temp = (ct_fl_seg*)malloc(sizeof(ct_fl_seg));
@@ -48,7 +46,7 @@ void ctfs_lock_add_waiting(ct_fl_t *current, ct_fl_t *node){
     node->fl_wait = temp;
 }
 
-void ctfs_lock_remove_blocking(ct_fl_t *current){
+inline void ctfs_lock_remove_blocking(ct_fl_t *current){
     /* remove the current node from others' blocking list*/
     assert(current != NULL);
     ct_fl_seg *temp, *temp1, *prev, *next;
@@ -85,18 +83,7 @@ void ctfs_lock_remove_blocking(ct_fl_t *current){
     }
 }
 
-int check_overlap(struct ct_fl_t *node1, struct ct_fl_t *node2){
-    /* check if two given range have conflicts */
-    return ((node1->fl_start <= node2->fl_start) && (node1->fl_end >= node2->fl_start)) ||\
-    ((node2->fl_start <= node1->fl_start) && (node2->fl_end >= node1->fl_start));
-}
-
-int check_access_conflict(struct ct_fl_t *node1, struct ct_fl_t *node2){
-    /* check if two given file access mode have conflicts */
-    return !((node1->fl_type == O_RDONLY) && (node2->fl_type == O_RDONLY));
-}
-
-ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
+inline ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
     /* add a new node to the lock list upon the request(combined into lock_acq below) */
     ct_fl_t *temp, *tail, *last;
     temp = (ct_fl_t*)malloc(sizeof(ct_fl_t));
@@ -136,7 +123,7 @@ ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
     return temp;
 }
 
-void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
+inline void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
     /* remove a node from the lock list upon the request */
     assert(node != NULL);
     ct_fl_t *prev, *next;
