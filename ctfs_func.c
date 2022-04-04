@@ -148,7 +148,6 @@ int ctfs_open (const char *pathname, int flags, ...){
 		return -1;
 	}
 	res = inode_path2inode(&frame);
-	pthread_mutex_init(&ct_rt.fl_lock[fd], NULL);
 	if(res){
 		ct_rt.errorn = res;
 		dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
@@ -252,7 +251,6 @@ int ctfs_close(int fd){
 	}
 	ct_rt.fd[fd].inode = 0;
 	ct_rt.fl[fd] = NULL;
-	pthread_mutex_destroy(&ct_rt.fl_lock[fd]);
 #ifdef CTFS_DEBUG
 	printf("closed fd: %d\n", fd);
 #endif
