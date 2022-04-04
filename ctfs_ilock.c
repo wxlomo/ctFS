@@ -1,22 +1,22 @@
 /********************************
  * ctFS inode RW Lock 
  * (testing, not included)
- * ctfs_rwilock.c
+ * ctfs_ilock.c
  * 
  * Editor: Weixuan Yang
  *******************************/
 
-#include "ctfs_filelock.h"
+#include "ctfs_ilock.h"
 
 /* acquire the inode read lock */
 inline void ctfs_ilock_read_acquire(index_t n){
     for(;;){
-        while(ct_fl.il_lock[n]->il_wcount){
+        while(ct_il.il_lock[n]->il_wcount){
             __sync_synchronize();
         }
-        __sync_fetch_and_add((char*)(&ct_fl.il_lock[n]->il_rcount), (int)1);
-        if(ct_fl.il_lock[n]->il_wcount){
-            __sync_fetch_and_sub((char*)(&ct_fl.il_lock[n]->il_rcount), (int)1);
+        __sync_fetch_and_add((char*)(&ct_il.il_lock[n]->il_rcount), (int)1);
+        if(ct_il.il_lock[n]->il_wcount){
+            __sync_fetch_and_sub((char*)(&ct_il.il_lock[n]->il_rcount), (int)1);
         }
         else break;
     }
@@ -24,20 +24,20 @@ inline void ctfs_ilock_read_acquire(index_t n){
 
 /* acquire the inode write lock */
 inline void ctfs_ilock_write_acquire(index_t n){
-    while(__sync_lock_test_and_set((char*)(&ct_fl.il_lock[n]->il_wcount), (int)1));
-    while(ct_fl.il_lock[n]->il_rcount){
+    while(__sync_lock_test_and_set((char*)(&ct_il.il_lock[n]->il_wcount), (int)1));
+    while(ct_il.il_lock[n]->il_rcount){
         __sync_synchronize();
     }
 }
 
 /* release the inode read lock */
 inline void ctfs_ilock_read_release(index_t n){
-    __sync_fetch_and_sub((char*)(&ct_fl.il_lock[n]->il_rcount), (int)1);
+    __sync_fetch_and_sub((char*)(&ct_il.il_lock[n]->il_rcount), (int)1);
 }
 
 /* release the inode write lock */
 inline void ctfs_ilock_write_release(index_t n){
-    __sync_lock_release((char*)(&ct_fl.il_lock[n]->il_wcount));
+    __sync_lock_release((char*)(&ct_il.il_lock[n]->il_wcount));
 }
 
 /* acquire the inode lock */
