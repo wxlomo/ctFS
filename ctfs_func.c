@@ -274,9 +274,9 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
 	ct_fl_t *currfl = ctfs_rlock_acquire(fd, offset, count, O_RDONLY);
-	inode_rw_lock(inode_n);
+	ctfs_ilock_acquire(inode_n, O_RDONLY);
 	if(offset >= ct_rt.fd[fd].inode->i_size){
-		inode_rw_unlock(inode_n);
+		ctfs_ilock_release(inode_n, O_RDONLY);
 		ctfs_rlock_release(fd, currfl);
 		return 0;
 	}
@@ -284,7 +284,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 		count = ct_rt.fd[fd].inode->i_size - offset;
 	}
 	void* target = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
-	inode_rw_unlock(inode_n);
+	ctfs_ilock_release(inode_n, O_RDONLY);
 
 #ifdef CTFS_DEBUG
 	timer_start();
@@ -322,7 +322,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
 	ct_fl_t *currfl = ctfs_rlock_acquire(fd, offset, count, O_WRONLY);
-	inode_rw_lock(inode_n);
+	ctfs_ilock_acquire(inode_n, O_WRONLY);
 	end = offset + count;
 	if(unlikely(end > ct_rt.fd[fd].inode->i_size)){
 #if CTFS_DEBUG > 2
@@ -338,7 +338,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #endif
 	}
 	void * addr_base = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
-	inode_rw_unlock(inode_n);
+	ctfs_ilock_release(inode_n, O_WRONLY);
 
 #ifdef CTFS_DEBUG
 	ino = *ct_rt.fd[fd].inode;
@@ -378,11 +378,11 @@ static inline ssize_t  ctfs_pwrite_atomic(int fd, const void *buf, size_t count,
 	
 	dax_grant_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	ino_t inode_n = ct_rt.fd[fd].inode->i_number;
-	inode_rw_lock(inode_n);
+	ctfs_ilock_acquire(inode_n, O_WRONLY);
 	size_t ori_size = ct_rt.fd[fd].inode->i_size;
 	if(ori_size <= offset){
 		// pure append
-		inode_rw_unlock(inode_n);
+		ctfs_ilock_release(inode_n, O_WRONLY);
 		return ctfs_pwrite_normal(fd, buf, count, offset);
 	}
 	// printf("pwrite atomic count: %lu, offset: %lu, original size: %lu\n", count, offset, ori_size);
@@ -413,7 +413,7 @@ static inline ssize_t  ctfs_pwrite_atomic(int fd, const void *buf, size_t count,
 	relptr_t new = pgg_allocate(ct_rt.fd[fd].inode->i_level);
 	if(unlikely(new == 0)){
 		printf("OUT of SPACE");
-		inode_rw_unlock(inode_n);
+		ctfs_ilock_release(inode_n, O_WRONLY);
 		dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 		return 0;
 	}
@@ -517,7 +517,7 @@ out:
 	pgg_deallocate(ct_rt.fd[fd].inode->i_level, new);
 	// bitlock_release(&ct_rt.pgg_lock, 32);
 	ct_rt.fd[fd].inode->i_finish_swap = 0;
-	inode_rw_unlock(inode_n);
+	ctfs_ilock_release(inode_n, O_WRONLY);
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return count;
 }
@@ -590,7 +590,7 @@ int ctfs_fallocate(int fd, int mode, off_t offset, off_t len){
 	}
 	dax_grant_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	ino_t inode_n = ct_rt.fd[fd].inode->i_number;
-	inode_rw_lock(inode_n);
+	ctfs_ilock_acquire(inode_n, O_WRONLY);
 	uint64_t end = offset + len;
 	if(end > ct_rt.fd[fd].inode->i_size){
 		size_t old = ct_rt.fd[fd].inode->i_size;
@@ -600,7 +600,7 @@ int ctfs_fallocate(int fd, int mode, off_t offset, off_t len){
 		}
 	}
 	inode_wb(ct_rt.fd[fd].inode);
-	inode_rw_unlock(inode_n);
+	ctfs_ilock_release(inode_n, O_WRONLY);
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return 0;
 }
@@ -626,7 +626,7 @@ int ctfs_truncate(const char *path, off_t length){
 		frame.current->i_size = length;
 	}
 	inode_wb(frame.current);
-	inode_rw_unlock(frame.current->i_number);
+	ctfs_ilock_release(frame.current->i_number, O_WRONLY);
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return 0;
 }
@@ -644,7 +644,7 @@ int ctfs_ftruncate(int fd, off_t len){
 	}
 	dax_grant_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	ino_t inode_n = ct_rt.fd[fd].inode->i_number;
-	inode_rw_lock(inode_n);
+	ctfs_ilock_acquire(inode_n, O_WRONLY);
 	if(len > ct_rt.fd[fd].inode->i_size){
 		inode_resize(ct_rt.fd[fd].inode, len);
 	}
@@ -652,7 +652,7 @@ int ctfs_ftruncate(int fd, off_t len){
 		ct_rt.fd[fd].inode->i_size = len;
 	}
 	inode_wb(ct_rt.fd[fd].inode);
-	inode_rw_unlock(inode_n);
+	ctfs_ilock_release(inode_n, O_WRONLY);
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return 0;
 }
@@ -763,12 +763,12 @@ struct dirent * ctfs_readdir(DIR *dirp){
 		return NULL;
 	}
 	ino_t inode_n = ct_rt.fd[fd].inode->i_number;
-	inode_rw_lock(inode_n);
+	ctfs_ilock_acquire(inode_n, O_RDONLY);
 	size_t dirent_size = ct_rt.fd[fd].inode->i_size / sizeof(ct_dirent_t);
 	ct_dirent_pt target = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
 	while(1){
 		if(ct_rt.fd[fd].offset >= dirent_size){
-			inode_rw_unlock(inode_n);
+			ctfs_ilock_release(inode_n, O_RDONLY);
 			dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 			return NULL;
 		}
@@ -787,7 +787,7 @@ struct dirent * ctfs_readdir(DIR *dirp){
 	ct_rt.fd[fd].temp_dirent.d_type = target[ct_rt.fd[fd].offset].d_type;
 	strcpy(ct_rt.fd[fd].temp_dirent.d_name, target[ct_rt.fd[fd].offset].d_name);
 	ct_rt.fd[fd].offset++;
-	inode_rw_unlock(inode_n);
+	ctfs_ilock_release(inode_n, O_RDONLY);
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return &ct_rt.fd[fd].temp_dirent;
 }
