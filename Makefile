@@ -8,8 +8,8 @@ all: ctfs.so mkfs
 libctfs.so: ctfs.a ctfs_wrapper.c ffile.o
 	$(GCC) -shared $(CFLAGS) -o bld/libctfs.so ctfs_wrapper.c bld/ctfs.a bld/ffile.o -ldl
 
-ctfs.a: ctfs_bitmap.o ctfs_func.o ctfs_inode.o ctfs_pgg.o ctfs_runtime.o lib_dax.o ctfs_cpy.o ctfs_func2.o ctfs_filelock.o
-	ar cru bld/ctfs.a bld/ctfs_bitmap.o bld/ctfs_func.o bld/ctfs_inode.o bld/ctfs_pgg.o bld/ctfs_runtime.o bld/lib_dax.o bld/ctfs_cpy.o bld/ctfs_func2.o bld/ctfs_filelock.o
+ctfs.a: ctfs_bitmap.o ctfs_func.o ctfs_inode.o ctfs_pgg.o ctfs_runtime.o lib_dax.o ctfs_cpy.o ctfs_func2.o ctfs_rlock.o
+	ar cru bld/ctfs.a bld/ctfs_bitmap.o bld/ctfs_func.o bld/ctfs_inode.o bld/ctfs_pgg.o bld/ctfs_runtime.o bld/lib_dax.o bld/ctfs_cpy.o bld/ctfs_func2.o bld/ctfs_rlock.o
 
 mkfs: ctfs.a
 	cd test && $(MAKE)
@@ -32,8 +32,8 @@ ctfs_pgg.o: ctfs_pgg.c
 ctfs_runtime.o: ctfs_runtime.c
 	$(GCC) -c $(CFLAGS) ctfs_runtime.c -o bld/ctfs_runtime.o
 
-ctfs_filelock.o: ctfs_filelock.c
-	$(GCC) -c $(CFLAGS) ctfs_filelock.c -o bld/ctfs_filelock.o
+ctfs_rlock.o: ctfs_rlock.c
+	$(GCC) -c $(CFLAGS) ctfs_rlock.c -o bld/ctfs_rlock.o
 
 ctfs_ilock.o: ctfs_ilock.c
 	$(GCC) -c $(CFLAGS) ctfs_ilock.c -o bld/ctfs_ilock.o

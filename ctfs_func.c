@@ -1,7 +1,7 @@
 #include "ctfs.h"
 #include "ctfs_pgg.h"
 #include "ctfs_runtime.h"
-#include "ctfs_filelock.h"
+#include "ctfs_rlock.h"
 
 #define _GNU_SOURCE
 // #define TEST_DRAM

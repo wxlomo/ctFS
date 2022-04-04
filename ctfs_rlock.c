@@ -7,7 +7,7 @@
  *         Hongjian Zhu
  *******************************/
 
-#include "ctfs_filelock.h"
+#include "ctfs_rlock.h"
 
 /* per lock list lock acquire */
 inline void rl_lock_acquire(uint64_t* addr){

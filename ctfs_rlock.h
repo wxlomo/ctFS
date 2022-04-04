@@ -7,8 +7,8 @@
  *         Hongjian Zhu
  *******************************/
 
-#ifndef CTFS_FILELOCK_H
-#define CTFS_FILELOCK_H
+#ifndef CTFS_RLOCK_H
+#define CTFS_RLOCK_H
 
 #include "ctfs_format.h"
 
