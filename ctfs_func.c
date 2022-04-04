@@ -1011,15 +1011,12 @@ int ctfs_fcntl(int fd, int cmd, ...){
 		va_start(ap, cmd);
 		ct_rt.fd[fd].flags = va_arg(ap, int);
 		return 0;
-<<<<<<< HEAD
 	case F_SETLK:
 	case F_SETLKW:
 		break;
 	case F_GETLK:
 		break;
 
-=======
->>>>>>> parent of f2d11ca (Update ctfs_func.c)
 	default:
 		return 0;
 		break;
