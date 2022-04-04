@@ -102,7 +102,7 @@ ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
     temp->fl_end = start + n - 1;
     temp->node_id = temp;
 
-    while(TEST_AND_SET(&ct_rt.fl_lock[fd]));
+    seg_lock_aquire(&ct_rt.fl_lock[fd]);
 
     if(ct_rt.fl[fd] != NULL){
         tail = ct_rt.fl[fd];   //get the head of the lock list
@@ -123,7 +123,7 @@ ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
         ct_rt.fl[fd] = temp;
     }
     //printf("Node %p added, Range: %u - %u, mode: %s\n", temp, temp->fl_start, temp->fl_end, enum_to_string(temp->fl_type));
-    TEST_AND_SET_RELEASE(&ct_rt.fl_lock[fd]);
+    seg_lock_release(&ct_rt.fl_lock[fd]);
 
     return temp;
 }
@@ -133,7 +133,7 @@ void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
     assert(node != NULL);
     ct_fl_t *prev, *next;
 
-    while(TEST_AND_SET(&ct_rt.fl_lock[fd]));
+    seg_lock_aquire(&ct_rt.fl_lock[fd]);
 
     prev = node->fl_prev;
     next = node->fl_next;
@@ -151,7 +151,7 @@ void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
     }
     ctfs_lock_remove_blocking(node);
     //printf("Node %p removed, Range: %u - %u, mode: %s\n", node, node->fl_start, node->fl_end, enum_to_string(node->fl_type));
-    TEST_AND_SET_RELEASE(&ct_rt.fl_lock[fd]);
+    seg_lock_release(&ct_rt.fl_lock[fd]);
 
     free(node);
 }
