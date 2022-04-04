@@ -273,7 +273,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 #ifdef CTFS_DEBUG
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
-	ct_fl_t *currfl = ctfs_rlock_acquire(fd, offset, count, O_RDONLY);
+	
 	inode_rw_lock(inode_n);
 	if(offset >= ct_rt.fd[fd].inode->i_size){
 		inode_rw_unlock(inode_n);
