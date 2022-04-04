@@ -1,5 +1,6 @@
 /********************************
- * ctFS inode RW Lock
+ * ctFS inode RW Lock 
+ * (testing, not included)
  * ctfs_rwilock.c
  * 
  * Editor: Weixuan Yang
@@ -36,7 +37,7 @@ inline void ctfs_ilock_read_release(index_t n){
 
 /* release the inode write lock */
 inline void ctfs_ilock_write_release(index_t n){
-    __sync_lock_release((char*)(&ct_fl.il_lock[n]->il_wcount), (int)1);
+    __sync_lock_release((char*)(&ct_fl.il_lock[n]->il_wcount));
 }
 
 /* acquire the inode lock */
