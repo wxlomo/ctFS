@@ -43,7 +43,7 @@ typedef struct ct_il_t{
 typedef struct ct_fl_frame{
     ct_fl_t*           fl[CT_MAX_FD];	   // one list per opened file
 	uint64_t           fl_lock[CT_MAX_FD]; // one lock per list
-    ct_il_t*           il_lock[CT_INODE_RW_SLOTS / 64]; // one lock per inode
+    ct_il_t*           il_lock[CT_INODE_RW_SLOTS]; // one lock per inode
 }ct_fl_frame;
 ct_fl_frame ct_fl;
 

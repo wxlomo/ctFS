@@ -19,38 +19,6 @@ inline void rl_lock_release(uint64_t* addr){
     __sync_lock_release((char*) ((uint64_t)addr));
 }
 
-/* acquire the inode read lock */
-inline void ctfs_ilock_read_acquire(index_t n){
-    for(;;){
-        while(ct_fl.il_lock[n]->il_wcount){
-            __sync_synchronize();
-        }
-        __sync_fetch_and_add((char*)(&ct_fl.il_lock[n]->il_rcount), (int)1);
-        if(ct_fl.il_lock[n]->il_wcount){
-            __sync_fetch_and_sub((char*)(&ct_fl.il_lock[n]->il_rcount), (int)1);
-        }
-        else break;
-    }
-}
-
-/* acquire the inode write lock */
-inline void ctfs_ilock_write_acquire(index_t n){
-    while(__sync_lock_test_and_set((char*)(&ct_fl.il_lock[n]->il_wcount), (int)1));
-    while(ct_fl.il_lock[n]->il_rcount){
-        __sync_synchronize();
-    }
-}
-
-/* release the inode read lock */
-inline void ctfs_ilock_read_release(index_t n){
-    __sync_fetch_and_sub((char*)(&ct_fl.il_lock[n]->il_rcount), (int)1);
-}
-
-/* release the inode write lock */
-inline void ctfs_ilock_write_release(index_t n){
-    __sync_lock_release((char*)(&ct_fl.il_lock[n]->il_wcount), (int)1);
-}
-
 /* check if two given range have conflicts */
 inline int check_overlap(struct ct_fl_t *node1, struct ct_fl_t *node2){
     return ((node1->fl_start <= node2->fl_start) && (node1->fl_end >= node2->fl_start)) ||\
@@ -226,28 +194,4 @@ ct_fl_t*  __attribute__((optimize("O0"))) ctfs_rlock_acquire(int fd, off_t offse
 void ctfs_rlock_release(int fd, ct_fl_t *node){
     assert(node != NULL);
     ctfs_rlock_remove_node(fd, node);
-}
-
-/* acquire the inode lock */
-void ctfs_ilock_acquire(index_t inode_n, int flag){
-    switch(flag){
-        case O_RDONLY:
-            ctfs_ilock_read_acquire(inode_n);
-            break;
-        case O_WRONLY:
-            ctfs_ilock_write_acquire(inode_n);
-            break;
-    }
-}
-
-/* release the inode read lock */
-void ctfs_ilock_release(index_t inode_n, int flag){
-    switch(flag){
-        case O_RDONLY:
-            ctfs_ilock_read_release(inode_n);
-            break;
-        case O_WRONLY:
-            ctfs_ilock_write_release(inode_n);
-            break;
-    }
 }
