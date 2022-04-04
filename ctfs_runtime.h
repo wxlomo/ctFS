@@ -1,7 +1,7 @@
 #ifndef CTFS_RUNTIME_H
 #define CTFS_RUNTIME_H
 
-#include "ctfs_filelock.h"
+#include "ctfs_format.h"
 
 /* File descriptor
  */

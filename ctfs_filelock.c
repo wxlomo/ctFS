@@ -7,7 +7,7 @@
  *         Hongjian Zhu
  *******************************/
 
-#include "ctfs_runtime.h"
+#include "ctfs_filelock.h"
 
 /* per segment lock acquire */
 inline void seg_lock_acquire(uint64_t* addr){

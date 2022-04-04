@@ -14,28 +14,29 @@
 
 /* block list and wait list segments */
 typedef struct ct_fl_seg{
-    struct ct_fl_seg *prev;
-    struct ct_fl_seg *next;
-    struct ct_fl_t *addr;
+    struct ct_fl_seg  *prev;
+    struct ct_fl_seg  *next;
+    struct ct_fl_t    *addr;
 }ct_fl_seg;
 
 /* File lock */
 typedef struct ct_fl_t {
-	struct ct_fl_t *fl_prev;
-    struct ct_fl_t *fl_next;   		// doubly linked list to other locks on this file
-	struct ct_fl_seg *fl_block; 	// locks that is blocking this lock
-	struct ct_fl_seg *fl_wait; 		// locks that is waiting for this lock
-	int fl_fd;    					// Which fd has this lock
-	unsigned char fl_type;			// type of the current lock: O_RDONLY, O_WRONLY, or O_RDWR
-	unsigned int fl_pid;
-    unsigned int fl_start;          // starting address of the range lock
-    unsigned int fl_end;            // ending address of the range lock
-    struct ct_fl_t *node_id;        // For Debug Only
+	struct ct_fl_t    *fl_prev;
+    struct ct_fl_t    *fl_next;            // doubly linked list to other locks on this file
+	ct_fl_seg         *fl_block; 	       // locks that is blocking this lock
+	ct_fl_seg         *fl_wait; 		   // locks that is waiting for this lock
+	int                fl_fd;    	       // Which fd has this lock
+	unsigned char      fl_type;		       // type of the current lock: O_RDONLY, O_WRONLY, or O_RDWR
+	unsigned int       fl_pid;
+    unsigned int       fl_start;           // starting address of the range lock
+    unsigned int       fl_end;             // ending address of the range lock
+    struct ct_fl_t    *node_id;            // For Debug Only
 }ct_fl_t;
 
+/* File lock frame */
 typedef struct ct_fl_frame{
-    ct_fl_t*  fl[CT_MAX_FD];		//one list per opened file
-	uint64_t  fl_lock[CT_MAX_FD];   //one lock per list
+    ct_fl_t*           fl[CT_MAX_FD];	   //one list per opened file
+	uint64_t           fl_lock[CT_MAX_FD]; //one lock per list
 }ct_fl_frame;
 ct_fl_frame ct_fl;
 
