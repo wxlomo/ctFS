@@ -56,8 +56,8 @@ struct ct_runtime{
 	char				pgg_lock_padding[56];
 
 	//range lock
-	ct_fl_t*            fl;		  //one list per opened file
-	uint64_t            fl_lock;  //one lock per list
+	ct_fl_t*            fl[CT_MAX_FD];		  //one list per opened file
+	uint64_t            fl_lock[CT_MAX_FD];   //one lock per list
 
 	// failsafe
 	uint64_t			failsafe_clock;
