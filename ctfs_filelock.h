@@ -29,11 +29,11 @@ struct ct_fl_t {
 };
 typedef struct ct_fl_t ct_fl_t;
 
-void seg_lock_aquire(int* addr){
+void seg_lock_aquire(uint64_t* addr){
     while(____sync_lock_test_and_set((char*) ((uint64_t)addr), (int)1));
 }
 
-void seg_lock_release(int* addr){
+void seg_lock_release(uint64_t* addr){
     __sync_lock_release((char*) ((uint64_t)addr));
 }
 
