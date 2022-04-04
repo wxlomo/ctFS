@@ -1,7 +1,7 @@
 #ifndef CTFS_FILELOCK_H
 #define CTFS_FILELOCK_H
 
-#include "ctfs_runtime.h"
+#include "ctfs_format.h"
 
 /* block list and wait list segments */
 struct ct_fl_seg{
