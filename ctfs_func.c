@@ -277,6 +277,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	inode_rw_lock(inode_n);
 	if(offset >= ct_rt.fd[fd].inode->i_size){
 		inode_rw_unlock(inode_n);
+		ctfs_rlock_release(fd, currfl);
 		return 0;
 	}
 	else if(offset + count >= ct_rt.fd[fd].inode->i_size){

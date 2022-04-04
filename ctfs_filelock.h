@@ -20,7 +20,7 @@ typedef struct ct_fl_seg{
 }ct_fl_seg;
 
 /* File lock */
-typedef struct ct_fl_t {
+typedef struct ct_fl_t{
 	struct ct_fl_t    *fl_prev;
     struct ct_fl_t    *fl_next;            // doubly linked list to other locks on this file
 	ct_fl_seg         *fl_block; 	       // locks that is blocking this lock
@@ -33,20 +33,27 @@ typedef struct ct_fl_t {
     struct ct_fl_t    *node_id;            // For Debug Only
 }ct_fl_t;
 
+/* inode lock */
+typedef struct ct_il_t{
+    int il_rcount;
+    int il_wcount;
+}ct_il_t;
+
 /* File lock frame */
 typedef struct ct_fl_frame{
-    ct_fl_t*           fl[CT_MAX_FD];	   //one list per opened file
-	uint64_t           fl_lock[CT_MAX_FD]; //one lock per list
+    ct_fl_t*           fl[CT_MAX_FD];	   // one list per opened file
+	uint64_t           fl_lock[CT_MAX_FD]; // one lock per list
+    ct_il_t*           il_lock[CT_INODE_RW_SLOTS / 64]; // one lock per inode
 }ct_fl_frame;
 ct_fl_frame ct_fl;
 
 /* range lock related functions */
-void      ctfs_rlock_init(int fd);                                               // initialization
+void      ctfs_rlock_init(int fd);                                          // initialization
 ct_fl_t*  ctfs_rlock_acquire(int fd, off_t offset, size_t count, int flag); // acquire a range lock, return the address of the lock
 void      ctfs_rlock_release(int fd, ct_fl_t *node);                        // release the range lock
 
 /* inode rw lock related functions */
-void      ctfs_ilock_acquire(index_t inode_n, int flag);
-void      ctfs_ilock_release(index_t inode_n, int flag);
+void      ctfs_ilock_acquire(index_t inode_n, int flag);                    // acquire the inode lock
+void      ctfs_ilock_release(index_t inode_n, int flag);                    // release the inode lock
 
 #endif
