@@ -33,6 +33,12 @@ typedef struct ct_fl_t {
     struct ct_fl_t *node_id;        // For Debug Only
 }ct_fl_t;
 
+typedef struct ct_fl_frame{
+    ct_fl_t*  fl[CT_MAX_FD];		//one list per opened file
+	uint64_t  fl_lock[CT_MAX_FD];   //one lock per list
+}ct_fl_frame;
+ct_fl_frame ct_fl;
+
 /*range lock related functions*/
 void ctfs_lock_list_init(int fd);                                        // initialization
 ct_fl_t*  ctfs_rlock_lock(int fd, off_t offset, size_t count, int flag); // acquire a range lock, return the address of the lock
