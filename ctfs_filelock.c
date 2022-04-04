@@ -107,10 +107,10 @@ static inline ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, in
     temp->fl_end = start + n - 1;
     temp->node_id = temp;
 
-    seg_lock_acquire(&ct_rt.fl_lock[fd]);
+    seg_lock_acquire(&ct_rt.fd[fd].fl_lock);
 
-    if(ct_rt.fl[fd] != NULL){
-        tail = ct_rt.fl[fd];   // get the head of the lock list
+    if(ct_rt.fd[fd].fl != NULL){
+        tail = ct_rt.fd[fd].fl;   // get the head of the lock list
         while(tail != NULL){
             // check if current list contains a lock that is not compatable
             if(check_overlap(tail, temp) && check_access_conflict(tail, temp)){
@@ -125,11 +125,11 @@ static inline ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, in
         temp->fl_prev = last;
         last->fl_next = temp;
     } else {
-        ct_rt.fl[fd] = temp;
+        ct_rt.fd[fd].fl = temp;
     }
     //printf("Node %p added, Range: %u - %u, mode: %s\n", temp, temp->fl_start, temp->fl_end, enum_to_string(temp->fl_type));
 
-    seg_lock_release(&ct_rt.fl_lock[fd]);
+    seg_lock_release(&ct_rt.fd[fd].fl_lock);
 
     return temp;
 }
@@ -139,15 +139,15 @@ static inline void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
     assert(node != NULL);
     ct_fl_t *prev, *next;
 
-    seg_lock_acquire(&ct_rt.fl_lock[fd]);
+    seg_lock_acquire(&ct_rt.fd[fd].fl_lock);
 
     prev = node->fl_prev;
     next = node->fl_next;
     if (prev == NULL){
         if(next == NULL)
-            ct_rt.fl[fd] = NULL;    // last one member in the lock list;
+            ct_rt.fd[fd].fl = NULL;    // last one member in the lock list;
         else{
-            ct_rt.fl[fd] = next;    // delete the very first node in list
+            ct_rt.fd[fd].fl = next;    // delete the very first node in list
             next->fl_prev = NULL;
         }
     } else {
@@ -157,8 +157,8 @@ static inline void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
     }
     ctfs_lock_remove_blocking(node);
     //printf("Node %p removed, Range: %u - %u, mode: %s\n", node, node->fl_start, node->fl_end, enum_to_string(node->fl_type));
-    
-    seg_lock_release(&ct_rt.fl_lock[fd]);
+
+    seg_lock_release(&ct_rt.fd[fd].fl_lock);
 
     free(node);
 }
@@ -166,8 +166,8 @@ static inline void ctfs_lock_list_remove_node(int fd, ct_fl_t *node){
 /* initialization */
 void ctfs_lock_list_init(){
     for (int i = 0; i < CT_MAX_FD; i++){
-        ct_rt.fl[i] = NULL;
-        ct_rt.fl_lock[i] = 0;
+        ct_rt.fd[i].fl = NULL;
+        ct_rt.fd[i].fl_lock = 0;
     }
 }
 
