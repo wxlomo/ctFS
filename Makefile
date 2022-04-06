@@ -34,7 +34,6 @@ ctfs_runtime.o: ctfs_runtime.c
 
 ctfs_rlock.o: ctfs_rlock.c
 	$(GCC) -c $(CFLAGS) ctfs_rlock.c -o bld/ctfs_rlock.o
-	$(warning *File range lock implemented)
 
 ctfs_ilock.o: ctfs_ilock.c
 	$(GCC) -c $(CFLAGS) ctfs_ilock.c -o bld/ctfs_ilock.o
