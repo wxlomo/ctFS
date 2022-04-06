@@ -23,7 +23,6 @@
         "iosfwd": "c",
         "iterator": "c",
         "streambuf": "c",
-        "vector": "c",
-        "memory": "c"
+        "vector": "c"
     }
 }
