@@ -177,12 +177,14 @@ void ctfs_rlock_init(int fd){
     switch(fd){
         case 0: // all
             for (int i = 0; i < CT_MAX_FD; i++){
-
+                ct_rt.fd[i].ct_fl->fl = NULL;
+                ct_rt.fd[i].ct_fl->fl_lock = 0;
             }
             break;
         default:
             free(ct_rt.fd[fd].ct_fl->fl);
-
+            ct_rt.fd[fd].ct_fl->fl = NULL;
+            ct_rt.fd[fd].ct_fl->fl_lock = 0;
     }
 }
 
