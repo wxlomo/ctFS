@@ -10,6 +10,19 @@
         "xlocmon": "c",
         "xlocnum": "c",
         "xstring": "c",
-        "xutility": "c"
+        "xutility": "c",
+        "atomic": "c",
+        "charconv": "c",
+        "cstring": "c",
+        "format": "c",
+        "system_error": "c",
+        "xlocale": "c",
+        "xlocbuf": "c",
+        "xlocinfo": "c",
+        "xmemory": "c",
+        "iosfwd": "c",
+        "iterator": "c",
+        "streambuf": "c",
+        "vector": "c"
     }
 }
