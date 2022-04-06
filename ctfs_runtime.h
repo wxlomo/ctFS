@@ -57,7 +57,7 @@ struct ct_runtime{
 	char				pgg_lock_padding[56];
 
 	// range lock
-	struct ct_fl_frame* ct_fl[CT_MAX_FD];
+	struct ct_fl_frame  ct_fl[CT_MAX_FD];
 
 	// failsafe
 	uint64_t			failsafe_clock;
