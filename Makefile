@@ -1,4 +1,4 @@
-CFLAGS=-O3 -fPIC -mclwb -mclflushopt -Wall -pthread -mavx512f -C #-DRAM_VER
+CFLAGS=-O3 -fPIC -mclwb -mclflushopt -Wall -pthread -mavx512f #-DRAM_VER
 GCC=gcc
 .PHONY: default
 default: libctfs.so;
