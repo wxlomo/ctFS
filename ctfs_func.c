@@ -1,7 +1,6 @@
 #include "ctfs.h"
 #include "ctfs_pgg.h"
 #include "ctfs_runtime.h"
-
 #include "ctfs_rlock.h"
 
 #define _GNU_SOURCE
@@ -286,6 +285,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	}
 	void* target = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
 	inode_rw_unlock(inode_n);
+
 #ifdef CTFS_DEBUG
 	timer_start();
 #endif
@@ -296,9 +296,11 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 		memcpy(buf, target + offset, count);
 	}
 	ctfs_rlock_release(fd, currfl);
+
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
+	
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return count;
 }
@@ -337,6 +339,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 	}
 	void * addr_base = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
 	inode_rw_unlock(inode_n);
+
 #ifdef CTFS_DEBUG
 	ino = *ct_rt.fd[fd].inode;
 #endif
@@ -348,6 +351,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
 	ctfs_rlock_release(fd, currfl);
+
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return count;
 }
