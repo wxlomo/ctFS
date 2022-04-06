@@ -104,7 +104,9 @@ static inline ct_fl_t* ctfs_rlock_add_node(int fd, off_t start, size_t n, int fl
     temp->fl_fd = fd;
     temp->fl_start = start;
     temp->fl_end = start + n - 1;
+#ifdef CTFS_DEBUG
     temp->node_id = temp;
+#endif
 
     rl_lock_acquire(&ct_rt.ct_fl[fd]->fl_lock);
 
