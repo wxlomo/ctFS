@@ -2,9 +2,10 @@
 #define CTFS_RUNTIME_H
 
 #include "ctfs_format.h"
+ 
+struct ct_fl_frame;
 
-/* File descriptor
- */
+/* File descriptor */
 struct ct_fd_t{
 	ct_inode_t     *inode;
 	size_t      	offset;
@@ -16,6 +17,8 @@ struct ct_fd_t{
 	uint64_t		cpy_time;
 	uint64_t		pswap_time;
 #endif
+	// range lock
+	struct ct_fl_frame* ct_fl;
 };
 typedef struct ct_fd_t ct_fd_t;
 
