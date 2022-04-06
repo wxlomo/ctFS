@@ -10,12 +10,12 @@
 #include "ctfs_rlock.h"
 
 /* per lock list lock acquire */
-inline void rl_lock_acquire(uint64_t* addr){
+inline void rl_lock_acquire(uint8_t* addr){
     while(__sync_lock_test_and_set((char*) ((uint64_t)addr), (int)1));
 }
 
 /* per lock list lock release */
-inline void rl_lock_release(uint64_t* addr){
+inline void rl_lock_release(uint8_t* addr){
     __sync_lock_release((char*) ((uint64_t)addr));
 }
 
