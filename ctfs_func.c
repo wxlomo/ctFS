@@ -2,7 +2,7 @@
 #include "ctfs_pgg.h"
 #include "ctfs_runtime.h"
 
-#include "ctfs_rlock.h"
+
 
 #define _GNU_SOURCE
 // #define TEST_DRAM
@@ -112,7 +112,7 @@ int ctfs_init(int flag){
 	ct_rt.current_dir = &ct_rt.inode_start[ct_rt.super_blk->root_inode];
 	ctfs_lock_init(ct_rt.open_lock);
 	ctfs_lock_init(ct_rt.inode_bmp_lock);
-	ctfs_rlock_init(0);
+
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return 0;
 }
@@ -253,7 +253,7 @@ int ctfs_close(int fd){
 		return -1;
 	}
 	ct_rt.fd[fd].inode = 0;
-	ctfs_rlock_init(fd);
+
 #ifdef CTFS_DEBUG
 	printf("closed fd: %d\n", fd);
 #endif
@@ -274,11 +274,11 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 #ifdef CTFS_DEBUG
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
-	ct_fl_t *currfl = ctfs_rlock_acquire(fd, offset, count, O_RDONLY);
+
 	inode_rw_lock(inode_n);
 	if(offset >= ct_rt.fd[fd].inode->i_size){
 		inode_rw_unlock(inode_n);
-		ctfs_rlock_release(fd, currfl);
+
 		return 0;
 	}
 	else if(offset + count >= ct_rt.fd[fd].inode->i_size){
@@ -295,7 +295,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	else{
 		memcpy(buf, target + offset, count);
 	}
-	ctfs_rlock_release(fd, currfl);
+
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
@@ -319,7 +319,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
-	ct_fl_t *currfl = ctfs_rlock_acquire(fd, offset, count, O_WRONLY);
+
 	inode_rw_lock(inode_n);
 	end = offset + count;
 	if(unlikely(end > ct_rt.fd[fd].inode->i_size)){
@@ -347,7 +347,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
-	ctfs_rlock_release(fd, currfl);
+
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
 	return count;
 }
