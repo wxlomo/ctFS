@@ -1,288 +1,392 @@
-/**
- * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the mingw-w64 runtime package.
- * No warranty is given; refer to the file DISCLAIMER.PD within this package.
- */
-#ifndef _TIME_H_
-#define _TIME_H_
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <time.h>
+#include <pthread.h>
+#include <inttypes.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <time.h>
 
-#include <crtdefs.h>
-
-#ifndef _WIN32
-#error Only Win32 target is supported!
-#endif
-
-#pragma pack(push,_CRT_PACKING)
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#ifndef _CRTIMP
-#define _CRTIMP __declspec(dllimport)
-#endif
-
-#ifndef _WCHAR_T_DEFINED
-#define _WCHAR_T_DEFINED
-  typedef unsigned short wchar_t;
-#endif
-
-#ifndef _TIME32_T_DEFINED
-#define _TIME32_T_DEFINED
-  typedef long __time32_t;
-#endif
-
-#ifndef _TIME64_T_DEFINED
-#define _TIME64_T_DEFINED
-  __MINGW_EXTENSION typedef __int64 __time64_t;
-#endif
-
-#ifndef _TIME_T_DEFINED
-#define _TIME_T_DEFINED
-#ifdef _USE_32BIT_TIME_T
-  typedef __time32_t time_t;
+#ifdef ctfs
+#include "../ctfs.h"
+#define OPEN        ctfs_open
+#define PWRITE      ctfs_pwrite
+#define PWRITEA		ctfs_pwrite_atomic
+#define PREAD       ctfs_pread
+#define CLOSE		close
+#define INIT        ctfs_init(0)
 #else
-  typedef __time64_t time_t;
-#endif
-#endif
-
-#ifndef _CLOCK_T_DEFINED
-#define _CLOCK_T_DEFINED
-  typedef long clock_t;
-#endif
-
-#ifndef _SIZE_T_DEFINED
-#define _SIZE_T_DEFINED
-#undef size_t
-#ifdef _WIN64
-  __MINGW_EXTENSION typedef unsigned __int64 size_t;
-#else
-  typedef unsigned int size_t;
-#endif
+#include <unistd.h>
+#define OPEN 		open
+#define PWRITE 		pwrite64
+#define PWRITEA		pwrite64
+#define PREAD 		pread64
+#define CLOSE		close
+#define FOPEN		fopen
+#define FCLOSE		fclose
+#define FWRITE		fwrite
+#define FREAD		fread
+#define FFLUSH		fflush
+#define INIT
+#define print_debug(a)
 #endif
 
-#ifndef _SSIZE_T_DEFINED
-#define _SSIZE_T_DEFINED
-#undef ssize_t
-#ifdef _WIN64
-  __MINGW_EXTENSION typedef __int64 ssize_t;
-#else
-  typedef int ssize_t;
-#endif
-#endif
+#define _GB (1*1024*1024*(unsigned long)1024)
 
-#ifndef NULL
-#ifdef __cplusplus
-#ifndef _WIN64
-#define NULL 0
-#else
-#define NULL 0LL
-#endif  /* W64 */
-#else
-#define NULL ((void *)0)
-#endif
-#endif
+typedef struct{
+    int tid;
+    int tnum;
+    int fd;
+    int round;
+    long long size;
+    int blk_size;
+    char* buffer;
+    char* rnd_buf;
+    long long *rnd_addrs;
+    uint64_t total_time;
+	uint64_t total_bytes;
+}config;
 
-#ifndef _TM_DEFINED
-#define _TM_DEFINED
-  struct tm {
-    int tm_sec;
-    int tm_min;
-    int tm_hour;
-    int tm_mday;
-    int tm_mon;
-    int tm_year;
-    int tm_wday;
-    int tm_yday;
-    int tm_isdst;
-  };
-#endif
+long calc_diff(struct timespec start, struct timespec end){
+	return (end.tv_sec * (long)(1000000000) + end.tv_nsec) -
+	(start.tv_sec * (long)(1000000000) + start.tv_nsec);
+}
 
-#define CLOCKS_PER_SEC 1000
-
-  __MINGW_IMPORT int _daylight;
-  __MINGW_IMPORT long _dstbias;
-  __MINGW_IMPORT long _timezone;
-  __MINGW_IMPORT char * _tzname[2];
-
-  _CRTIMP errno_t __cdecl _get_daylight(int *_Daylight);
-  _CRTIMP errno_t __cdecl _get_dstbias(long *_Daylight_savings_bias);
-  _CRTIMP errno_t __cdecl _get_timezone(long *_Timezone);
-  _CRTIMP errno_t __cdecl _get_tzname(size_t *_ReturnValue,char *_Buffer,size_t _SizeInBytes,int _Index);
-  char *__cdecl asctime(const struct tm *_Tm) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  char *__cdecl _ctime32(const __time32_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  clock_t __cdecl clock(void);
-  double __cdecl _difftime32(__time32_t _Time1,__time32_t _Time2);
-  struct tm *__cdecl _gmtime32(const __time32_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  struct tm *__cdecl _localtime32(const __time32_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  size_t __cdecl strftime(char * __restrict__ _Buf,size_t _SizeInBytes,const char * __restrict__ _Format,const struct tm * __restrict__ _Tm);
-  _CRTIMP size_t __cdecl _strftime_l(char * __restrict__ _Buf,size_t _Max_size,const char * __restrict__ _Format,const struct tm * __restrict__ _Tm,_locale_t _Locale);
-  _CRTIMP char *__cdecl _strdate(char *_Buffer) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  _CRTIMP char *__cdecl _strtime(char *_Buffer) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  __time32_t __cdecl _time32(__time32_t *_Time);
-  __time32_t __cdecl _mktime32(struct tm *_Tm);
-  __time32_t __cdecl _mkgmtime32(struct tm *_Tm);
-#if defined (_POSIX_) || defined(__GNUC__)
-  void __cdecl tzset(void) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
-#endif
-#if !defined (_POSIX_)
-  _CRTIMP void __cdecl _tzset(void);
-#endif
-
-  double __cdecl _difftime64(__time64_t _Time1,__time64_t _Time2);
-  _CRTIMP char *__cdecl _ctime64(const __time64_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  _CRTIMP struct tm *__cdecl _gmtime64(const __time64_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  _CRTIMP struct tm *__cdecl _localtime64(const __time64_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  _CRTIMP __time64_t __cdecl _mktime64(struct tm *_Tm);
-  _CRTIMP __time64_t __cdecl _mkgmtime64(struct tm *_Tm);
-  _CRTIMP __time64_t __cdecl _time64(__time64_t *_Time);
-  unsigned __cdecl _getsystime(struct tm *_Tm);
-  unsigned __cdecl _setsystime(struct tm *_Tm,unsigned _MilliSec);
-
-#ifndef _WTIME_DEFINED
-  _CRTIMP wchar_t *__cdecl _wasctime(const struct tm *_Tm);
-  wchar_t *__cdecl _wctime32(const __time32_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  size_t __cdecl wcsftime(wchar_t * __restrict__ _Buf,size_t _SizeInWords,const wchar_t * __restrict__ _Format,const struct tm * __restrict__ _Tm);
-  _CRTIMP size_t __cdecl _wcsftime_l(wchar_t * __restrict__ _Buf,size_t _SizeInWords,const wchar_t * __restrict__ _Format,const struct tm * __restrict__ _Tm,_locale_t _Locale);
-  _CRTIMP wchar_t *__cdecl _wstrdate(wchar_t *_Buffer) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  _CRTIMP wchar_t *__cdecl _wstrtime(wchar_t *_Buffer) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-  _CRTIMP wchar_t *__cdecl _wctime64(const __time64_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-
-#if !defined (RC_INVOKED) && !defined (_INC_WTIME_INL)
-#define _INC_WTIME_INL
-  wchar_t *__cdecl _wctime(const time_t *) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-#ifndef __CRT__NO_INLINE
-#ifndef _USE_32BIT_TIME_T
-  __CRT_INLINE wchar_t *__cdecl _wctime(const time_t *_Time) { return _wctime64(_Time); }
-#else
-  __CRT_INLINE wchar_t *__cdecl _wctime(const time_t *_Time) { return _wctime32(_Time); }
-#endif
-#endif /* __CRT__NO_INLINE */
-#endif
-
-#define _WTIME_DEFINED
-#endif
-
-#ifndef RC_INVOKED
-double __cdecl difftime(time_t _Time1,time_t _Time2);
-char *__cdecl ctime(const time_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-struct tm *__cdecl gmtime(const time_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-struct tm *__cdecl localtime(const time_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-
-#ifdef _POSIX
-#ifdef __GNUC__ /* FIXME: Other compilers that these macros work with? */
-#ifndef localtime_r
-#define localtime_r(_Time, _Tm)	({ struct tm *___tmp_tm =		\
-						localtime((_Time));	\
-						if (___tmp_tm) {	\
-						  *(_Tm) = *___tmp_tm;	\
-						  ___tmp_tm = (_Tm);	\
-						}			\
-						___tmp_tm;	})
-#endif
-#ifndef gmtime_r
-#define gmtime_r(_Time,_Tm)	({ struct tm *___tmp_tm =		\
-						gmtime((_Time));	\
-						if (___tmp_tm) {	\
-						  *(_Tm) = *___tmp_tm;	\
-						  ___tmp_tm = (_Tm);	\
-						}			\
-						___tmp_tm;	})
-#endif
-#ifndef ctime_r
-#define ctime_r(_Time,_Str)	({ char *___tmp_tm = ctime((_Time));	\
-						if (___tmp_tm)		\
-						 ___tmp_tm =		\
-						   strcpy((_Str),___tmp_tm); \
-						___tmp_tm;	})
-#endif
-#ifndef asctime_r
-#define asctime_r(_Tm, _Buf)	({ char *___tmp_tm = asctime((_Tm));	\
-						if (___tmp_tm)		\
-						 ___tmp_tm =		\
-						   strcpy((_Buf),___tmp_tm);\
-						___tmp_tm;	})
-#endif
-#else /* NOT GCC: */
-      /* FIXME: These are more generic but call the main function twice! */
-#ifndef localtime_r
-#define localtime_r(_Time, _Tm) (localtime ((_Time)) ? *(_Tm) = *localtime ((_Time),(_Tm)) : 0)
-#endif
-#ifndef gmtime_r
-#define gmtime_r(_Time,_Tm) (gmtime ((_Time)) ? (*(_Tm) = *gmtime (_Time),(_Tm)) : 0)
-#endif
-#ifndef ctime_r
-#define ctime_r(_Time,_Str) (ctime ((_Time)) ? (strcpy((_Str),ctime ((_Time))),(_Str)) : 0)
-#endif
-#endif /* __GNUC__ */
-#endif /* _POSIX */
-
-time_t __cdecl mktime(struct tm *_Tm);
-time_t __cdecl _mkgmtime(struct tm *_Tm);
-time_t __cdecl time(time_t *_Time);
-
-#ifndef __CRT__NO_INLINE
-#if !defined(_USE_32BIT_TIME_T)
-__CRT_INLINE double __cdecl difftime(time_t _Time1,time_t _Time2)
-  { return _difftime64(_Time1,_Time2); }
-__CRT_INLINE char *__cdecl ctime(const time_t *_Time) { return _ctime64(_Time); }
-__CRT_INLINE struct tm *__cdecl gmtime(const time_t *_Time) { return _gmtime64(_Time); }
-__CRT_INLINE struct tm *__cdecl localtime(const time_t *_Time) { return _localtime64(_Time); }
-__CRT_INLINE time_t __cdecl mktime(struct tm *_Tm) { return _mktime64(_Tm); }
-__CRT_INLINE time_t __cdecl _mkgmtime(struct tm *_Tm) { return _mkgmtime64(_Tm); }
-__CRT_INLINE time_t __cdecl time(time_t *_Time) { return _time64(_Time); }
-#else
-__CRT_INLINE double __cdecl difftime(time_t _Time1,time_t _Time2)
-  { return _difftime32(_Time1,_Time2); }
-__CRT_INLINE char *__cdecl ctime(const time_t *_Time) { return _ctime32(_Time); }
-__CRT_INLINE struct tm *__cdecl localtime(const time_t *_Time) { return _localtime32(_Time); }
-__CRT_INLINE time_t __cdecl mktime(struct tm *_Tm) { return _mktime32(_Tm); }
-__CRT_INLINE struct tm *__cdecl gmtime(const time_t *_Time) { return _gmtime32(_Time); }
-__CRT_INLINE time_t __cdecl _mkgmtime(struct tm *_Tm) { return _mkgmtime32(_Tm); }
-__CRT_INLINE time_t __cdecl time(time_t *_Time) { return _time32(_Time); }
-#endif /* !_USE_32BIT_TIME_T */
-#endif /* !__CRT__NO_INLINE */
-#endif /* !RC_INVOKED */
-
-#if !defined(NO_OLDNAMES) || defined(_POSIX)
-#define CLK_TCK CLOCKS_PER_SEC
-
-  _CRTIMP extern int daylight;
-  _CRTIMP extern long timezone;
-  _CRTIMP extern char *tzname[2];
-  void __cdecl tzset(void) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
-#endif
-
-#include <_timeval.h>
-
-#ifndef _TIMEZONE_DEFINED /* also in sys/time.h */
-#define _TIMEZONE_DEFINED
-struct timezone {
-  int tz_minuteswest;
-  int tz_dsttime;
+enum test_mode{
+	SEQ_READ,      //multi-threads sequential read
+	SEQ_WRITE,
+	RND_READ,      //multi-threads random read
+	RND_WRITE
 };
 
-  extern int __cdecl mingw_gettimeofday (struct timeval *p, struct timezone *z);
-#endif /* _TIMEZONE_DEFINED */
+void *seq_write_test(void *vargp){
+    config *conf = (config*) vargp;
+    uint64_t ret = 0;
+    struct timespec stopwatch_start;
+	struct timespec stopwatch_stop;
+    long long portion = conf->size / conf->tnum;
+    long long start_addr = conf->tid * portion;
 
-#ifdef __cplusplus
+    printf("Thread %d created, write range is: %lld - %lld\n", conf->tid, start_addr, start_addr + portion);
+
+    clock_gettime(CLOCK_MONOTONIC, &stopwatch_start);
+    for(uint64_t i = 0; i < conf->round; i++){
+        ret += PWRITE(conf->fd, conf->buffer, portion, start_addr);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &stopwatch_stop);
+
+    conf->total_time = (uint64_t)calc_diff(stopwatch_start, stopwatch_stop);
+    conf->total_bytes = ret;
+    printf("Thread %d write %lu Bytes in %lu ns.\n", conf->tid, ret, conf->total_time);
+    pthread_exit(NULL);
 }
-#endif
 
-#pragma pack(pop)
+void *seq_read_test(void *vargp){
+    config *conf = (config*) vargp;
+    uint64_t ret = 0;
+    struct timespec stopwatch_start;
+	struct timespec stopwatch_stop;
+    long long portion = conf->size / conf->tnum;
+    long long start_addr = conf->tid * portion;
 
-#include <sec_api/time_s.h>
+    printf("Thread %d created, read range is: %lld - %lld\n", conf->tid, start_addr, start_addr + portion);
 
-/* Adding timespec definition.  */
-#include <sys/timeb.h>
+    clock_gettime(CLOCK_MONOTONIC, &stopwatch_start);
+    for(uint64_t i = 0; i < conf->round; i++){
+        ret += PREAD(conf->fd, conf->buffer, portion, start_addr);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &stopwatch_stop);
 
-/* POSIX 2008 says clock_gettime and timespec are defined in time.h header,
-   but other systems - like Linux, Solaris, etc - tend to declare such
-   recent extensions only if the following guards are met.  */
-#if !defined(IN_WINPTHREAD) && \
-	((!defined(_STRICT_STDC) && !defined(__XOPEN_OR_POSIX)) || \
-	 (_POSIX_C_SOURCE > 2) || defined(__EXTENSIONS__))
-#include <pthread_time.h>
-#endif
+    conf->total_time = (uint64_t)calc_diff(stopwatch_start, stopwatch_stop);
+    conf->total_bytes = ret;
+    printf("Thread %d read %lu Bytes in %lu ns.\n", conf->tid, ret, conf->total_time);
+    pthread_exit(NULL);
+}
 
-#endif /* End _TIME_H_ */
+void *rnd_write_test(void *vargp){
+    config *conf = (config*) vargp;
+    uint64_t ret = 0;
+    int tid = conf->tid;
+    char *rnd_buf;      //the data source for rnd tests
+    struct timespec stopwatch_start;
+	struct timespec stopwatch_stop;
+
+	rnd_buf = malloc(conf->blk_size);
+	//generate the random write test data
+    for(uint64_t i = 0; i < (conf->blk_size / sizeof(char)); i++){
+            rnd_buf[i] = conf->tid; //any region that write by this thread will be replaced with its thread ID
+    }
+
+	printf("Thread %d created, write range is: \n", conf->tid);
+    printf("\t%lld - %lld\n", conf->rnd_addrs[tid], conf->rnd_addrs[tid] + conf->blk_size);
+
+    clock_gettime(CLOCK_MONOTONIC, &stopwatch_start);
+    for(int i = 0; i < conf->round; i++){
+        //write 1s to the pre-determined addresses
+        ret += PWRITE(conf->fd, rnd_buf, conf->blk_size, conf->rnd_addrs[tid]);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &stopwatch_stop);
+
+    conf->total_time = (uint64_t)calc_diff(stopwatch_start, stopwatch_stop);
+    conf->total_bytes = ret;
+    printf("Thread %d write %lu Bytes in %lu ns.\n", conf->tid, ret, conf->total_time);
+    pthread_exit(NULL);
+}
+
+void *rnd_read_test(void *vargp){
+    config *conf = (config*) vargp;
+    uint64_t ret = 0;
+    struct timespec stopwatch_start;
+	struct timespec stopwatch_stop;
+
+    printf("Thread %d created, read range is: \n", conf->tid);
+    for(int i = 0; i < conf->round; i++){
+        printf("\t%lld - %lld\n", conf->rnd_addrs[i], conf->rnd_addrs[i] + conf->blk_size);
+    }
+
+    clock_gettime(CLOCK_MONOTONIC, &stopwatch_start);
+    for(int i = 0; i < conf->round; i++){
+        ret += PREAD(conf->fd, conf->buffer, conf->blk_size, conf->rnd_addrs[i]);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &stopwatch_stop);
+
+    conf->total_time = (uint64_t)calc_diff(stopwatch_start, stopwatch_stop);
+    conf->total_bytes = ret;
+    printf("Thread %d read %lu Bytes in %lu ns.\n", conf->tid, ret, conf->total_time);
+    pthread_exit(NULL);
+}
+
+int main(int argc, char ** argv){
+	if(argc != 5){
+		printf("usage: path_to_folder num_thread size round\n");
+		return -1;
+	}
+	uint64_t total_bytes = 0, real_time;
+	int fd;
+    char *buffer;       //the data source for seq tests
+    char *rnd_buf;
+	char *path = argv[1];
+	int num_thread = atoi(argv[2]);
+	long long size = atoll(argv[3]);
+	int round = atoll(argv[4]);
+	int rnd_blk_size = 4096;
+    long long *rnd_addrs;
+    static uint16_t seeds[3] = { 182, 757, 21 };
+
+    printf("Pid: %ld\n", (long)getppid());
+    printf("Hit enter to continue...\n");
+    char enter = 0;
+    while(enter != '\n'){
+        enter = getchar();
+    }
+
+	if(size % 1024 != 0){
+        printf("Error: Size must be a multiple of 1024");
+        exit(-1);
+	}
+    printf("*************************************************************************\n");
+    printf("Preparing the testing data.\n");
+    if(size >= 1 * _GB){
+        buffer = malloc(1 * _GB);  //cap the max buffer size to 1GB
+        for(uint64_t i = 0; i < (1 * _GB / sizeof(char)); i++){
+            buffer[i] = i % 256;    //hash function for later data consistance check
+        }
+    } else {
+        buffer = malloc(size);  //init the buffer to custom size
+        for(uint64_t i = 0; i < (size / sizeof(char)); i++){
+            buffer[i] = i % 256;    //hash function for later data consistance check
+        }
+    }
+    //preparing the random test address list
+    rnd_addrs = malloc(sizeof(long long) * num_thread);
+    for(int i = 0; i < num_thread; i++){
+        rnd_addrs[i] = nrand48(seeds) % (size - rnd_blk_size + 1);
+        printf("%09x\n", rnd_addrs[i]);
+    }
+
+    printf("Tesing data is ready.\n");
+    printf("*************************************************************************\n\n");
+    pthread_t threads[num_thread];
+    config conf[num_thread];
+
+
+    /*************************************************************************
+    * beginning of the single file multi-thread sequential write test.
+    *************************************************************************/
+    printf("Starting %d thread(s) SEQ Write Test\n", num_thread);
+    printf("*************************************************************************\n");
+    real_time = 0;
+    total_bytes = 0;
+    fd = OPEN (path, O_WRONLY | O_CREAT | O_SYNC, S_IRWXU);
+    for(int i = 0; i < num_thread; i++){
+        conf[i].fd = fd;
+        conf[i].tid = i;
+        conf[i].round = round;
+        conf[i].tnum = num_thread;
+        conf[i].size = size;
+        conf[i].buffer = buffer;
+        conf[i].total_bytes = 0;
+        conf[i].total_time = 0;
+        pthread_create(&threads[i], NULL, seq_write_test, (void*)&conf[i]);
+    }
+
+    for(int i = 0; i < num_thread; i++)
+    {
+        pthread_join(threads[i], NULL);
+        if(conf[i].total_time > real_time) real_time = conf[i].total_time; //get the time of the last finished thread
+        total_bytes += conf[i].total_bytes;
+    }
+    //close file here to clear the buffer
+    CLOSE(fd);
+
+    printf("Sequential Write Test Completed: \n");
+    printf("\tTotal Time Used: %lu ns\n", real_time);
+    printf("\tTotal Byte Write in %d rounds: %lu bytes\n", round, total_bytes);
+    printf("\tAverage Write Speed: %f GB/s\n", (double)total_bytes / (double)real_time);
+    printf("\n");
+
+
+    /*************************************************************************
+    * beginning of the single file multi-thread sequential read test.
+    *************************************************************************/
+    printf("Starting %d thread(s) SEQ Read Test\n", num_thread);
+    printf("*************************************************************************\n");
+    real_time = 0;
+    total_bytes = 0;
+    fd = OPEN(path, O_RDONLY | O_SYNC, S_IRWXU);
+    for(int i = 0; i < num_thread; i++){
+        conf[i].fd = fd;
+        conf[i].tid = i;
+        conf[i].round = round;
+        conf[i].tnum = num_thread;
+        conf[i].size = size;
+        conf[i].buffer = buffer;
+        conf[i].total_bytes = 0;
+        conf[i].total_time = 0;
+        pthread_create(&threads[i], NULL, seq_read_test, (void*)&conf[i]);
+    }
+
+    for(int i = 0; i < num_thread; i++)
+    {
+        pthread_join(threads[i], NULL);
+        if(conf[i].total_time > real_time) real_time = conf[i].total_time; //get the time of the last finished thread
+        total_bytes += conf[i].total_bytes;
+    }
+    //close file here for writeback time
+    CLOSE(fd);
+
+    printf("Sequential Read Test Completed: \n");
+    printf("\tTotal Time Used: %lu ns\n", real_time);
+    printf("\tTotal Byte Read in %d rounds: %lu bytes\n", round, total_bytes);
+    printf("\tAverage Read Speed: %f GB/s\n", (double)total_bytes / (double)real_time);
+
+    for(uint64_t i = 0; i < (size / sizeof(char)); i++)
+    {
+        if(buffer[i] != ((char)i % 256)){
+            printf("Error: Data varification failed!\n");
+            exit(-1);
+        }
+    }
+    printf("\n");
+
+
+    /*************************************************************************
+    * beginning of the single file multi-thread random write test.
+    *************************************************************************/
+    printf("Starting %d thread(s) RND Write Test\n", num_thread);
+    printf("*************************************************************************\n");
+    real_time = 0;
+    total_bytes = 0;
+    fd = OPEN(path, O_WRONLY | O_SYNC, S_IRWXU);
+    for(int i = 0; i < num_thread; i++){
+        conf[i].fd = fd;
+        conf[i].tid = i;
+        conf[i].round = round;
+        conf[i].tnum = num_thread;
+        conf[i].size = size;
+        conf[i].blk_size = rnd_blk_size;
+        conf[i].buffer = buffer;
+        conf[i].total_bytes = 0;
+        conf[i].total_time = 0;
+        conf[i].rnd_addrs = rnd_addrs;
+        pthread_create(&threads[i], NULL, rnd_write_test, (void*)&conf[i]);
+    }
+
+    for(int i = 0; i < num_thread; i++)
+    {
+        pthread_join(threads[i], NULL);
+        real_time += conf[i].total_time;
+        total_bytes += conf[i].total_bytes;
+    }
+    //close file here for writeback time
+    CLOSE(fd);
+
+    real_time = real_time / num_thread;
+    total_bytes = total_bytes / num_thread;
+    printf("Random Write Test Completed with %d Bytes Block: \n", rnd_blk_size);
+    printf("\tAverage Time Used: %lu ns\n", real_time);
+    printf("\tAverage Byte Write in %d rounds: %lu bytes\n", round, total_bytes);
+    printf("\tAverage Write Speed: %f GB/s\n", (double)total_bytes / (double)real_time);
+
+    fd = OPEN(path, O_RDONLY | O_SYNC, S_IRWXU);
+    rnd_buf = malloc(conf->blk_size);
+    for(int i = 0; i < num_thread; i++)
+    {
+        pread(fd, rnd_buf, rnd_blk_size, rnd_addrs[i]);
+        for(uint64_t j = 0; j < (rnd_blk_size / sizeof(char)); j++){
+           if((int)rnd_buf[j] != i){
+                printf("Error: Data varification failed!\n");
+                printf("Expect: %d, but got: %d\n", i, (int)rnd_buf[j]);
+                exit(-1);
+            }
+        }
+    }
+    CLOSE(fd);
+    printf("\n");
+
+
+    /*************************************************************************
+    * beginning of the single file multi-thread random read test.
+    *************************************************************************/
+    printf("Starting %d thread(s) RND Read Test\n", num_thread);
+    printf("*************************************************************************\n");
+    real_time = 0;
+    total_bytes = 0;
+    fd = OPEN(path, O_RDONLY | O_SYNC, S_IRWXU);
+    for(int i = 0; i < num_thread; i++){
+        conf[i].fd = fd;
+        conf[i].tid = i;
+        conf[i].round = round;
+        conf[i].tnum = num_thread;
+        conf[i].size = size;
+        conf[i].blk_size = rnd_blk_size;
+        conf[i].buffer = buffer;
+        conf[i].total_bytes = 0;
+        conf[i].total_time = 0;
+        conf[i].rnd_addrs = rnd_addrs;
+        conf[i].rnd_buf = rnd_buf;
+        pthread_create(&threads[i], NULL, rnd_read_test, (void*)&conf[i]);
+    }
+
+    for(int i = 0; i < num_thread; i++)
+    {
+        pthread_join(threads[i], NULL);
+        real_time += conf[i].total_time;
+        total_bytes += conf[i].total_bytes;
+    }
+    //close file here for writeback time
+    CLOSE(fd);
+
+    real_time = real_time / num_thread;
+    total_bytes = total_bytes / num_thread;
+    printf("Random Read Test Completed with %d Bytes Block: \n", rnd_blk_size);
+    printf("\tAverage Time Used: %lu ns\n", real_time);
+    printf("\tAverage Byte Read in %d rounds: %lu bytes\n", round, total_bytes);
+    printf("\tAverage Read Speed: %f GB/s\n", (double)total_bytes / (double)real_time);
+    printf("\n");
+
+	return 0;
+}
