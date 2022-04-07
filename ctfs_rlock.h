@@ -26,7 +26,7 @@ typedef struct ct_fl_t{
 	ct_fl_seg         *fl_block; 	       // locks that is blocking this lock
 	ct_fl_seg         *fl_wait; 		   // locks that is waiting for this lock
 	int                fl_fd;    	       // Which fd has this lock
-	unsigned char               fl_flag;		       // type of the current lock: O_RDONLY, O_WRONLY, or O_RDWR
+	unsigned char      fl_flag;		       // type of the current lock: O_RDONLY, O_WRONLY, or O_RDWR
     uint64_t           fl_start;           // starting address of the range lock
     uint64_t           fl_end;             // ending address of the range lock
 #ifdef CTFS_DEBUG

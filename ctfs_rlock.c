@@ -113,7 +113,8 @@ static inline ct_fl_t* ctfs_rlock_add_node(int fd, off_t start, size_t n, int fl
     if(ct_fl.fl[fd] != NULL){
         tail = ct_fl.fl[fd];   // get the head of the lock list
         while(tail != NULL){ // check if current list contains a lock that is not compatable
-            if(check_overlap(tail, temp) && check_access_conflict(tail, temp)){
+            if(check_access_conflict(tail, temp)){
+            if(check_overlap(tail, temp)){
                 ctfs_rlock_add_blocking(temp, tail); //add the conflicted lock into blocking list
 #ifdef CTFS_DEBUG
                 printf("\tNode %p is blocking the Node %p\n", tail, temp);
@@ -122,6 +123,7 @@ static inline ct_fl_t* ctfs_rlock_add_node(int fd, off_t start, size_t n, int fl
 #ifdef CTFS_DEBUG
                 printf("\tNode %p is waiting the Node %p\n", temp, tail);
 #endif
+            }
             }
             last = tail;
             tail = tail->fl_next;
