@@ -1,0 +1,8 @@
+
+*.json
+*.a
+*.so
+*.o
+*.code-workspace
+test/parallel
+test/fstest
