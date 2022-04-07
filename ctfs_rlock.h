@@ -36,7 +36,7 @@ typedef struct ct_fl_t{
 /* File lock frame */
 typedef struct ct_fl_frame{
     ct_fl_t*           fl[CT_MAX_FD];	   // one list per opened file
-	uint64_t           fl_lock[CT_MAX_FD]; // one lock per list
+	uint8_t           fl_lock[CT_MAX_FD]; // one lock per list
 }ct_fl_frame;
 ct_fl_frame ct_fl;
 
