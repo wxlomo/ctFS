@@ -10,7 +10,7 @@
 #ifndef CTFS_RLOCK_H
 #define CTFS_RLOCK_H
 
-#include "ctfs_format.h"
+#include "ctfs_type.h"
 
 /* block list and wait list segments */
 typedef struct ct_fl_seg{
@@ -30,7 +30,7 @@ typedef struct ct_fl_t{
     uint64_t           fl_start;           // starting address of the range lock
     uint64_t           fl_end;             // ending address of the range lock
 #ifdef CTFS_DEBUG
-    struct ct_fl_t    *node_id;            // For Debug Only
+    struct ct_fl_t    *node_id;            // for debug only
 #endif
 }ct_fl_t;
 

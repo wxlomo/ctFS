@@ -2,7 +2,7 @@
  * ctFS File Range Lock
  * ctfs_rlock.c
  * 
- * Editor: Siyan Zhang
+ * Editor: Siyan Zhang 
  *         Weixuan Yang
  *         Hongjian Zhu
  *******************************/
@@ -92,7 +92,7 @@ inline void ctfs_rlock_remove_blocking(ct_fl_t *current){
     }
 }
 
-/* add a new node to the lock list upon the request(combined into lock_acq below) */
+/* add a new node to the lock list upon the request (combined into lock_acq below) */
 static inline ct_fl_t* ctfs_rlock_add_node(int fd, off_t start, size_t n, int flag){
     ct_fl_t *temp, *tail, *last;
     temp = (ct_fl_t*)malloc(sizeof(ct_fl_t));
