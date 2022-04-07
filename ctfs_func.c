@@ -351,7 +351,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
 	ctfs_rlock_release(fd, currfl);
-}
+;
 
 pwrite_atomic(int fd, const void *buf, size_t count, off_t offset){
 	if(unlikely(fd >= CT_MAX_FD || ct_rt.fd[fd].inode == NULL)){
