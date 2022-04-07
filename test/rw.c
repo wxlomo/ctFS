@@ -167,7 +167,7 @@ void *rnd_read_test(void *vargp){
 }
 
 int main(int argc, char ** argv){
-	if(argc != 5){
+	if(argc != 6){
 		printf("usage: path_to_folder num_thread total_size_in_MB data_size_in_KB round\n");
 		return -1;
 	}
@@ -175,14 +175,14 @@ int main(int argc, char ** argv){
 	int fd;
     char *buffer;       // the data source for seq tests
     char *rnd_buf;
-	char *path = "\\/temp";
-	int num_thread = atoi(argv[1]);
-	long long size = atoll(argv[2]) * 1024 * 1024;
-	int rnd_blk_size = atoi(argv[3]) * 1024;
-    int round = atoll(argv[4]);
+	char *path = argv[1];
+	int num_thread = atoi(argv[2]);
+	long long size = atoll(argv[3]) * 1024 * 1024;
+	int rnd_blk_size = atoi(argv[4]) * 1024;
+    int round = atoll(argv[5]);
     long long *rnd_addrs;
     static uint16_t seeds[3] = { 182, 757, 21 };
-
+    
     printf("Pid: %ld\n", (long)getppid());
     printf("*************************************************************************\n");
     printf("Preparing the testing data.\n");
