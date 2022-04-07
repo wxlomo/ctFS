@@ -338,7 +338,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #endif
 	}
 	void * addr_base = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
-	inode_rw_unlock(inode_n);
+	
 
 #ifdef CTFS_DEBUG
 	ino = *ct_rt.fd[fd].inode;
@@ -350,6 +350,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
+	inode_rw_unlock(inode_n);
 	ctfs_rlock_release(fd, currfl);
 
 	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
