@@ -273,18 +273,18 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 #ifdef CTFS_DEBUG
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
+	ct_fl_t *currfl = ctfs_rlock_acquire(fd, offset, count, O_RDONLY);
 	
-	inode_rw_lock(inode_n);
 	if(offset >= ct_rt.fd[fd].inode->i_size){
 		inode_rw_unlock(inode_n);
-		
+		ctfs_rlock_release(fd, currfl);
 		return 0;
 	}
 	else if(offset + count >= ct_rt.fd[fd].inode->i_size){
 		count = ct_rt.fd[fd].inode->i_size - offset;
 	}
 	void* target = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
-	inode_rw_unlock(inode_n);
+	
 
 #ifdef CTFS_DEBUG
 	timer_start();
@@ -295,7 +295,7 @@ ssize_t  ctfs_pread(int fd, void *buf, size_t count, off_t offset){
 	else{
 		memcpy(buf, target + offset, count);
 	}
-	
+	ctfs_rlock_release(fd, currfl);
 
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
@@ -321,8 +321,8 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	ct_inode_t ino = *ct_rt.fd[fd].inode;
 #endif
+	ct_fl_t *currfl = ctfs_rlock_acquire(fd, offset, count, O_WRONLY);
 	
-	inode_rw_lock(inode_n);
 	end = offset + count;
 	if(unlikely(end > ct_rt.fd[fd].inode->i_size)){
 #if CTFS_DEBUG > 2
@@ -338,7 +338,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #endif
 	}
 	void * addr_base = CT_REL2ABS(ct_rt.fd[fd].inode->i_block);
-	inode_rw_unlock(inode_n);
+	
 
 #ifdef CTFS_DEBUG
 	ino = *ct_rt.fd[fd].inode;
@@ -350,7 +350,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
-	
+	ctfs_rlock_release(fd, currfl);
 }
 
 pwrite_atomic(int fd, const void *buf, size_t count, off_t offset){
