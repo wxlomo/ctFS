@@ -10,8 +10,6 @@
 #ifndef CTFS_RLOCK_H
 #define CTFS_RLOCK_H
 
-#include "ctfs_format.h"
-
 /* block list and wait list segments */
 typedef struct ct_fl_seg{
     struct ct_fl_seg  *prev;
