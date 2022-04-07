@@ -355,7 +355,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 	return count;
 }
 
-static inline void ctfs_pwrite_atomic cpy(ct_inode_pt inode ,void * base, void * staging, const void *buf, size_t count, off_t offset){
+static inline void ctfs_pwrite_atomic_cpy(ct_inode_pt inode ,void * base, void * staging, const void *buf, size_t count, off_t offset){
 	avx_cpy(staging + offset, base + offset, count);
 	inode->i_finish_swap = 2;
 	avx_cpy(base + offset, buf, count);
