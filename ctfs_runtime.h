@@ -20,7 +20,6 @@ struct ct_fd_t{
 typedef struct ct_fd_t ct_fd_t;
 
 /* end of in-RAM structures */
-struct ct_fl_frame;
 struct failsafe_frame;
 
 struct ct_runtime{
@@ -55,9 +54,6 @@ struct ct_runtime{
 	// ppg lock
 	uint64_t			pgg_lock;
 	char				pgg_lock_padding[56];
-
-	// range lock
-	struct ct_fl_frame* ct_fl[CT_MAX_FD];
 
 	// failsafe
 	uint64_t			failsafe_clock;
