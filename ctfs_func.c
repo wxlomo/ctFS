@@ -351,9 +351,18 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
 	ctfs_rlock_release(fd, currfl);
-;
+	dax_stop_access(ct_rt.mpk[DAX_MPK_DEFAULT]);
+	return count;
+}
 
-pwrite_atomic(int fd, const void *buf, size_t count, off_t offset){
+static inline void ctfs_pwrite_atomic cpy(ct_inode_pt inode ,void * base, void * staging, const void *buf, size_t count, off_t offset){
+	avx_cpy(staging + offset, base + offset, count);
+	inode->i_finish_swap = 2;
+	avx_cpy(base + offset, buf, count);
+	return;
+}
+
+static inline ssize_t ctfs_pwrite_atomic(int fd, const void *buf, size_t count, off_t offset){
 	if(unlikely(fd >= CT_MAX_FD || ct_rt.fd[fd].inode == NULL)){
 		ct_rt.errorn = EBADF;
 		return -1;
