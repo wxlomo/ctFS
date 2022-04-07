@@ -27,7 +27,7 @@ inline int check_overlap(struct ct_fl_t *node1, struct ct_fl_t *node2){
 
 /* check if two given file access mode have conflicts */
 inline int check_access_conflict(struct ct_fl_t *node1, struct ct_fl_t *node2){
-    return !((node1->fl_type == O_RDONLY) && (node2->fl_type == O_RDONLY));
+    return !((node1->fl_flag == O_RDONLY) && (node2->fl_flag == O_RDONLY));
 }
 
 /* add the conflicted node into the head of the blocking list of the current node */
@@ -100,11 +100,13 @@ static inline ct_fl_t* ctfs_rlock_add_node(int fd, off_t start, size_t n, int fl
     temp->fl_prev = NULL;
     temp->fl_block = NULL;
     temp->fl_wait = NULL;
-    temp->fl_type = flag;
+    temp->fl_flag = flag;
     temp->fl_fd = fd;
     temp->fl_start = start;
     temp->fl_end = start + n - 1;
+#ifdef CTFS_DEBUG
     temp->node_id = temp;
+#endif
 
     rl_lock_acquire(&ct_fl.fl_lock[fd]);
 
@@ -130,7 +132,7 @@ static inline ct_fl_t* ctfs_rlock_add_node(int fd, off_t start, size_t n, int fl
         ct_fl.fl[fd] = temp;
     }
 #ifdef CTFS_DEBUG
-    printf("Node %p added, Range: %u - %u, mode: %s\n", temp, temp->fl_start, temp->fl_end, enum_to_string(temp->fl_type));
+    printf("Node %p added, Range: %u - %u, mode: %s\n", temp, temp->fl_start, temp->fl_end, enum_to_string(temp->fl_flag));
 #endif
 
     rl_lock_release(&ct_fl.fl_lock[fd]);
@@ -160,7 +162,7 @@ static inline void ctfs_rlock_remove_node(int fd, ct_fl_t *node){
     }
     ctfs_rlock_remove_blocking(node);
 #ifdef CTFS_DEBUG
-    printf("Node %p removed, Range: %u - %u, mode: %s\n", node, node->fl_start, node->fl_end, enum_to_string(node->fl_type));
+    printf("Node %p removed, Range: %u - %u, mode: %s\n", node, node->fl_start, node->fl_end, enum_to_string(node->fl_flag));
 #endif
 
     rl_lock_release(&ct_fl.fl_lock[fd]);
