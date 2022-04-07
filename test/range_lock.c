@@ -1,288 +1,288 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdint.h>
-#include <assert.h>
-#include <pthread.h>
+/**
+ * This file has no copyright assigned and is placed in the Public Domain.
+ * This file is part of the mingw-w64 runtime package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
+ */
+#ifndef _TIME_H_
+#define _TIME_H_
 
-#define list_entry(ptr, type, member) container_of(ptr, type, member)
-#define TRUE 1
-#define FALSE 0
+#include <crtdefs.h>
 
-struct ct_fl_t;
-typedef uint16_t uint16;
-pthread_spinlock_t lock_list_spin;
-pthread_mutex_t lock_list_mutex;
+#ifndef _WIN32
+#error Only Win32 target is supported!
+#endif
 
-enum mode{O_RDONLY, O_WRONLY, O_RDWR};
+#pragma pack(push,_CRT_PACKING)
 
-/* block list and wait list segments */
-struct ct_fl_seg{
-    struct ct_fl_seg *prev;
-    struct ct_fl_seg *next;
-    struct ct_fl_t *addr;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef _CRTIMP
+#define _CRTIMP __declspec(dllimport)
+#endif
+
+#ifndef _WCHAR_T_DEFINED
+#define _WCHAR_T_DEFINED
+  typedef unsigned short wchar_t;
+#endif
+
+#ifndef _TIME32_T_DEFINED
+#define _TIME32_T_DEFINED
+  typedef long __time32_t;
+#endif
+
+#ifndef _TIME64_T_DEFINED
+#define _TIME64_T_DEFINED
+  __MINGW_EXTENSION typedef __int64 __time64_t;
+#endif
+
+#ifndef _TIME_T_DEFINED
+#define _TIME_T_DEFINED
+#ifdef _USE_32BIT_TIME_T
+  typedef __time32_t time_t;
+#else
+  typedef __time64_t time_t;
+#endif
+#endif
+
+#ifndef _CLOCK_T_DEFINED
+#define _CLOCK_T_DEFINED
+  typedef long clock_t;
+#endif
+
+#ifndef _SIZE_T_DEFINED
+#define _SIZE_T_DEFINED
+#undef size_t
+#ifdef _WIN64
+  __MINGW_EXTENSION typedef unsigned __int64 size_t;
+#else
+  typedef unsigned int size_t;
+#endif
+#endif
+
+#ifndef _SSIZE_T_DEFINED
+#define _SSIZE_T_DEFINED
+#undef ssize_t
+#ifdef _WIN64
+  __MINGW_EXTENSION typedef __int64 ssize_t;
+#else
+  typedef int ssize_t;
+#endif
+#endif
+
+#ifndef NULL
+#ifdef __cplusplus
+#ifndef _WIN64
+#define NULL 0
+#else
+#define NULL 0LL
+#endif  /* W64 */
+#else
+#define NULL ((void *)0)
+#endif
+#endif
+
+#ifndef _TM_DEFINED
+#define _TM_DEFINED
+  struct tm {
+    int tm_sec;
+    int tm_min;
+    int tm_hour;
+    int tm_mday;
+    int tm_mon;
+    int tm_year;
+    int tm_wday;
+    int tm_yday;
+    int tm_isdst;
+  };
+#endif
+
+#define CLOCKS_PER_SEC 1000
+
+  __MINGW_IMPORT int _daylight;
+  __MINGW_IMPORT long _dstbias;
+  __MINGW_IMPORT long _timezone;
+  __MINGW_IMPORT char * _tzname[2];
+
+  _CRTIMP errno_t __cdecl _get_daylight(int *_Daylight);
+  _CRTIMP errno_t __cdecl _get_dstbias(long *_Daylight_savings_bias);
+  _CRTIMP errno_t __cdecl _get_timezone(long *_Timezone);
+  _CRTIMP errno_t __cdecl _get_tzname(size_t *_ReturnValue,char *_Buffer,size_t _SizeInBytes,int _Index);
+  char *__cdecl asctime(const struct tm *_Tm) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  char *__cdecl _ctime32(const __time32_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  clock_t __cdecl clock(void);
+  double __cdecl _difftime32(__time32_t _Time1,__time32_t _Time2);
+  struct tm *__cdecl _gmtime32(const __time32_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  struct tm *__cdecl _localtime32(const __time32_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  size_t __cdecl strftime(char * __restrict__ _Buf,size_t _SizeInBytes,const char * __restrict__ _Format,const struct tm * __restrict__ _Tm);
+  _CRTIMP size_t __cdecl _strftime_l(char * __restrict__ _Buf,size_t _Max_size,const char * __restrict__ _Format,const struct tm * __restrict__ _Tm,_locale_t _Locale);
+  _CRTIMP char *__cdecl _strdate(char *_Buffer) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  _CRTIMP char *__cdecl _strtime(char *_Buffer) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  __time32_t __cdecl _time32(__time32_t *_Time);
+  __time32_t __cdecl _mktime32(struct tm *_Tm);
+  __time32_t __cdecl _mkgmtime32(struct tm *_Tm);
+#if defined (_POSIX_) || defined(__GNUC__)
+  void __cdecl tzset(void) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+#endif
+#if !defined (_POSIX_)
+  _CRTIMP void __cdecl _tzset(void);
+#endif
+
+  double __cdecl _difftime64(__time64_t _Time1,__time64_t _Time2);
+  _CRTIMP char *__cdecl _ctime64(const __time64_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  _CRTIMP struct tm *__cdecl _gmtime64(const __time64_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  _CRTIMP struct tm *__cdecl _localtime64(const __time64_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  _CRTIMP __time64_t __cdecl _mktime64(struct tm *_Tm);
+  _CRTIMP __time64_t __cdecl _mkgmtime64(struct tm *_Tm);
+  _CRTIMP __time64_t __cdecl _time64(__time64_t *_Time);
+  unsigned __cdecl _getsystime(struct tm *_Tm);
+  unsigned __cdecl _setsystime(struct tm *_Tm,unsigned _MilliSec);
+
+#ifndef _WTIME_DEFINED
+  _CRTIMP wchar_t *__cdecl _wasctime(const struct tm *_Tm);
+  wchar_t *__cdecl _wctime32(const __time32_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  size_t __cdecl wcsftime(wchar_t * __restrict__ _Buf,size_t _SizeInWords,const wchar_t * __restrict__ _Format,const struct tm * __restrict__ _Tm);
+  _CRTIMP size_t __cdecl _wcsftime_l(wchar_t * __restrict__ _Buf,size_t _SizeInWords,const wchar_t * __restrict__ _Format,const struct tm * __restrict__ _Tm,_locale_t _Locale);
+  _CRTIMP wchar_t *__cdecl _wstrdate(wchar_t *_Buffer) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  _CRTIMP wchar_t *__cdecl _wstrtime(wchar_t *_Buffer) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+  _CRTIMP wchar_t *__cdecl _wctime64(const __time64_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+
+#if !defined (RC_INVOKED) && !defined (_INC_WTIME_INL)
+#define _INC_WTIME_INL
+  wchar_t *__cdecl _wctime(const time_t *) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+#ifndef __CRT__NO_INLINE
+#ifndef _USE_32BIT_TIME_T
+  __CRT_INLINE wchar_t *__cdecl _wctime(const time_t *_Time) { return _wctime64(_Time); }
+#else
+  __CRT_INLINE wchar_t *__cdecl _wctime(const time_t *_Time) { return _wctime32(_Time); }
+#endif
+#endif /* __CRT__NO_INLINE */
+#endif
+
+#define _WTIME_DEFINED
+#endif
+
+#ifndef RC_INVOKED
+double __cdecl difftime(time_t _Time1,time_t _Time2);
+char *__cdecl ctime(const time_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+struct tm *__cdecl gmtime(const time_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+struct tm *__cdecl localtime(const time_t *_Time) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+
+#ifdef _POSIX
+#ifdef __GNUC__ /* FIXME: Other compilers that these macros work with? */
+#ifndef localtime_r
+#define localtime_r(_Time, _Tm)	({ struct tm *___tmp_tm =		\
+						localtime((_Time));	\
+						if (___tmp_tm) {	\
+						  *(_Tm) = *___tmp_tm;	\
+						  ___tmp_tm = (_Tm);	\
+						}			\
+						___tmp_tm;	})
+#endif
+#ifndef gmtime_r
+#define gmtime_r(_Time,_Tm)	({ struct tm *___tmp_tm =		\
+						gmtime((_Time));	\
+						if (___tmp_tm) {	\
+						  *(_Tm) = *___tmp_tm;	\
+						  ___tmp_tm = (_Tm);	\
+						}			\
+						___tmp_tm;	})
+#endif
+#ifndef ctime_r
+#define ctime_r(_Time,_Str)	({ char *___tmp_tm = ctime((_Time));	\
+						if (___tmp_tm)		\
+						 ___tmp_tm =		\
+						   strcpy((_Str),___tmp_tm); \
+						___tmp_tm;	})
+#endif
+#ifndef asctime_r
+#define asctime_r(_Tm, _Buf)	({ char *___tmp_tm = asctime((_Tm));	\
+						if (___tmp_tm)		\
+						 ___tmp_tm =		\
+						   strcpy((_Buf),___tmp_tm);\
+						___tmp_tm;	})
+#endif
+#else /* NOT GCC: */
+      /* FIXME: These are more generic but call the main function twice! */
+#ifndef localtime_r
+#define localtime_r(_Time, _Tm) (localtime ((_Time)) ? *(_Tm) = *localtime ((_Time),(_Tm)) : 0)
+#endif
+#ifndef gmtime_r
+#define gmtime_r(_Time,_Tm) (gmtime ((_Time)) ? (*(_Tm) = *gmtime (_Time),(_Tm)) : 0)
+#endif
+#ifndef ctime_r
+#define ctime_r(_Time,_Str) (ctime ((_Time)) ? (strcpy((_Str),ctime ((_Time))),(_Str)) : 0)
+#endif
+#endif /* __GNUC__ */
+#endif /* _POSIX */
+
+time_t __cdecl mktime(struct tm *_Tm);
+time_t __cdecl _mkgmtime(struct tm *_Tm);
+time_t __cdecl time(time_t *_Time);
+
+#ifndef __CRT__NO_INLINE
+#if !defined(_USE_32BIT_TIME_T)
+__CRT_INLINE double __cdecl difftime(time_t _Time1,time_t _Time2)
+  { return _difftime64(_Time1,_Time2); }
+__CRT_INLINE char *__cdecl ctime(const time_t *_Time) { return _ctime64(_Time); }
+__CRT_INLINE struct tm *__cdecl gmtime(const time_t *_Time) { return _gmtime64(_Time); }
+__CRT_INLINE struct tm *__cdecl localtime(const time_t *_Time) { return _localtime64(_Time); }
+__CRT_INLINE time_t __cdecl mktime(struct tm *_Tm) { return _mktime64(_Tm); }
+__CRT_INLINE time_t __cdecl _mkgmtime(struct tm *_Tm) { return _mkgmtime64(_Tm); }
+__CRT_INLINE time_t __cdecl time(time_t *_Time) { return _time64(_Time); }
+#else
+__CRT_INLINE double __cdecl difftime(time_t _Time1,time_t _Time2)
+  { return _difftime32(_Time1,_Time2); }
+__CRT_INLINE char *__cdecl ctime(const time_t *_Time) { return _ctime32(_Time); }
+__CRT_INLINE struct tm *__cdecl localtime(const time_t *_Time) { return _localtime32(_Time); }
+__CRT_INLINE time_t __cdecl mktime(struct tm *_Tm) { return _mktime32(_Tm); }
+__CRT_INLINE struct tm *__cdecl gmtime(const time_t *_Time) { return _gmtime32(_Time); }
+__CRT_INLINE time_t __cdecl _mkgmtime(struct tm *_Tm) { return _mkgmtime32(_Tm); }
+__CRT_INLINE time_t __cdecl time(time_t *_Time) { return _time32(_Time); }
+#endif /* !_USE_32BIT_TIME_T */
+#endif /* !__CRT__NO_INLINE */
+#endif /* !RC_INVOKED */
+
+#if !defined(NO_OLDNAMES) || defined(_POSIX)
+#define CLK_TCK CLOCKS_PER_SEC
+
+  _CRTIMP extern int daylight;
+  _CRTIMP extern long timezone;
+  _CRTIMP extern char *tzname[2];
+  void __cdecl tzset(void) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+#endif
+
+#include <_timeval.h>
+
+#ifndef _TIMEZONE_DEFINED /* also in sys/time.h */
+#define _TIMEZONE_DEFINED
+struct timezone {
+  int tz_minuteswest;
+  int tz_dsttime;
 };
-typedef struct ct_fl_seg ct_fl_seg;
 
-/* File lock */
-struct ct_fl_t {
-	struct ct_fl_t *fl_prev;
-    struct ct_fl_t *fl_next;   		/* single liked list to other locks on this file */
-	struct ct_fl_seg *fl_block; 		/* locks that is blocking this lock */
-	struct ct_fl_seg *fl_wait; 		/* locks that is waiting for this lock*/
+  extern int __cdecl mingw_gettimeofday (struct timeval *p, struct timezone *z);
+#endif /* _TIMEZONE_DEFINED */
 
-	volatile int fl_lock;			/* lock itself*/
-
-	int fl_fd;    					/* Which fd has this lock */
-	unsigned char fl_type;			/* type of the current lock: O_RDONLY, O_WRONLY, or O_RDWR */
-	unsigned int fl_pid;
-    unsigned int fl_start;          /* starting address of the range lock*/
-    unsigned int fl_end;            /* ending address of the range lock*/
-    struct ct_fl_t *node_id;        /* For Debug Only */
-};
-typedef struct ct_fl_t ct_fl_t;
-
-ct_fl_t* head;
-
-char* enum_to_string(int mode){
-    switch(mode){
-        case O_RDONLY:
-            return "O_RDONLY";
-        case O_WRONLY:
-            return "O_WRONLY";
-        case O_RDWR:
-            return "O_RDWR";
-        default:
-            return "UNKNOWN";
-    }
+#ifdef __cplusplus
 }
+#endif
 
-void ctfs_lock_add_blocking(ct_fl_t *current, ct_fl_t *node){
-    /* add the conflicted node into the head of the blocking list of the current node*/
-    ct_fl_seg *temp;
-    temp = (ct_fl_seg*)malloc(sizeof(ct_fl_seg));
-    temp->prev = NULL;
-    temp->next = current->fl_block;
-    temp->addr = node;
+#pragma pack(pop)
 
-    if(current->fl_block != NULL){
-        current->fl_block->prev = temp;
-    }
-    current->fl_block = temp;
-}
+#include <sec_api/time_s.h>
 
-void ctfs_lock_add_waiting(ct_fl_t *current, ct_fl_t *node){
-    /*add the current node to the wait list head of the conflicted node*/
-    ct_fl_seg *temp;
-    temp = (ct_fl_seg*)malloc(sizeof(ct_fl_seg));
-    temp->prev = NULL;
-    temp->next = node->fl_wait;
-    temp->addr = current;
-    if(node->fl_wait != NULL){
-        node->fl_wait->prev = temp;
-    }
-    node->fl_wait = temp;
-}
+/* Adding timespec definition.  */
+#include <sys/timeb.h>
 
-void ctfs_lock_remove_blocking(ct_fl_t *current){
-    /* remove the current node from others' blocking list*/
-    assert(current != NULL);
-    ct_fl_seg *temp, *temp1, *prev, *next;
-    temp = current->fl_wait;
-    while(temp != NULL){    //go through all node this is waiting for current node
-        temp1 = temp->addr->fl_block;
-        while(temp1 != NULL){   //go thorough the blocking list on other nodes to find itself
-            //compare range and mode
-            //if((temp1->addr->fl_start == current->fl_start) && (temp1->addr->fl_end == current->fl_end) && (temp1->addr->fl_type == current->fl_type)){
-            //or simply compares the address
-            if(temp1->addr == current){
-                prev = temp1->prev;
-                next = temp1->next;
-                if(prev != NULL)
-                    prev->next = next;
-                else
-                    temp->addr->fl_block = NULL;    //last one in the blocking list
-                if(next != NULL)
-                    next->prev = prev;
-                free(temp1);
-                break;
-            }
-            temp1 = temp1->next;
-        }
-        printf("\tNode %p removed from Node %p blocking list\n", current, temp);
-        if(temp->next == NULL){ //last member in waiting list
-            free(temp);
-            current->fl_wait = NULL;
-            break;
-        }
-        temp = temp->next;
-        if(temp != NULL)    //if not the last member
-            free(temp->prev);
-    }
-}
+/* POSIX 2008 says clock_gettime and timespec are defined in time.h header,
+   but other systems - like Linux, Solaris, etc - tend to declare such
+   recent extensions only if the following guards are met.  */
+#if !defined(IN_WINPTHREAD) && \
+	((!defined(_STRICT_STDC) && !defined(__XOPEN_OR_POSIX)) || \
+	 (_POSIX_C_SOURCE > 2) || defined(__EXTENSIONS__))
+#include <pthread_time.h>
+#endif
 
-
-int check_overlap(struct ct_fl_t *node1, struct ct_fl_t *node2){
-    /* check if two given range have conflicts */
-    return ((node1->fl_start <= node2->fl_start) && (node1->fl_end >= node2->fl_start)) ||\
-    ((node2->fl_start <= node1->fl_start) && (node2->fl_end >= node1->fl_start));
-}
-
-int check_access_conflict(struct ct_fl_t *node1, struct ct_fl_t *node2){
-    /* check if two given file access mode have conflicts */
-    return !((node1->fl_type == O_RDONLY) && (node2->fl_type == O_RDONLY));
-}
-
-ct_fl_t* ctfs_lock_list_add_node(int fd, off_t start, size_t n, int flag){
-    /* add a new node to the lock list upon the request(combined into lock_acq below) */
-    ct_fl_t *temp, *tail, *last;
-    temp = (ct_fl_t*)malloc(sizeof(ct_fl_t));
-    temp->fl_next = NULL;
-    temp->fl_prev = NULL;
-    temp->fl_block = NULL;
-    temp->fl_wait = NULL;
-    temp->fl_type = flag;
-    temp->fl_fd = fd;
-    temp->fl_start = start;
-    temp->fl_end = start + n - 1;
-    temp->node_id = temp;
-
-    //pthread_spin_lock(&lock_list_spin);
-    pthread_mutex_lock(&lock_list_mutex);
-
-    if(head != NULL){
-        tail = head;   //get the head of the lock list
-        while(tail != NULL){
-            //check if current list contains a lock that is not compatable
-            if(check_overlap(tail, temp) && check_access_conflict(tail, temp)){
-                ctfs_lock_add_blocking(temp, tail); //add the conflicted lock into blocking list
-                printf("\tNode %p is blocking the Node %p\n", tail, temp);
-                ctfs_lock_add_waiting(temp, tail); //add the new node to the waiting list of the conflicted node
-                printf("\tNode %p is waiting the Node %p\n", tail, temp);
-            }
-            last = tail;
-            tail = tail->fl_next;
-        }
-        temp->fl_prev = last;
-        last->fl_next = temp;
-    } else {
-        head = temp;
-    }
-    printf("Node %p added, Range: %u - %u, mode: %s\n", temp, temp->fl_start, temp->fl_end, enum_to_string(temp->fl_type));
-   
-    pthread_mutex_unlock(&lock_list_mutex);
-    //pthread_spin_unlock(&lock_list_spin);
-
-    return temp;
-}
-
-void ctfs_lock_list_remove_node(ct_fl_t *node){
-    /* remove a node from the lock list upon the request */
-    assert(node != NULL);
-    ct_fl_t *prev, *next;
-
-    //pthread_spin_lock(&lock_list_spin);
-    pthread_mutex_lock(&lock_list_mutex);
-    prev = node->fl_prev;
-    next = node->fl_next;
-    if (prev == NULL){
-        if(next == NULL)
-            head = NULL;    //last one member in the lock list;
-        else{
-            head = next;    //delete the very first node in list
-            next->fl_prev = NULL;
-        }
-    } else {
-        prev->fl_next = next;
-        if (next != NULL)
-            next->fl_prev = prev;
-    }
-    ctfs_lock_remove_blocking(node);
-    printf("Node %p removed, Range: %u - %u, mode: %s\n", node, node->fl_start, node->fl_end, enum_to_string(node->fl_type));
-
-    pthread_mutex_unlock(&lock_list_mutex);
-    //pthread_spin_unlock(&lock_list_spin);
-
-    free(node);
-}
-
-void print_all_info(){
-    ct_fl_t *temp1;
-    ct_fl_seg *temp2;
-
-    //pthread_spin_lock(&lock_list_spin);
-    pthread_mutex_lock(&lock_list_mutex);
-    temp1 = head;
-    printf("*********************** Final List ***********************\n");
-    while(temp1 != NULL){
-        printf("Node: %p, Range: %u - %u, mode: %s ===>\n", temp1->node_id, temp1->fl_start, temp1->fl_end, enum_to_string(temp1->fl_type));
-
-        temp2 = temp1->fl_wait;
-        while(temp2 != NULL){
-            printf("\tWaiting by: Node %p, Range: %u - %u, mode: %s\n", temp2->addr->node_id, temp2->addr->fl_start, temp2->addr->fl_end, enum_to_string(temp2->addr->fl_type));
-            temp2 = temp2->next;
-        }
-
-        temp2 = temp1->fl_block;
-        while(temp2 != NULL){
-            printf("\tBlocked by: Node %p, Range: %u - %u, mode: %s\n", temp2->addr->node_id, temp2->addr->fl_start, temp2->addr->fl_end, enum_to_string(temp2->addr->fl_type));
-            temp2 = temp2->next;
-        }
-        printf("\n");
-        temp1 = temp1->fl_next;
-    }
-    printf("**********************************************************\n");
-
-    pthread_mutex_unlock(&lock_list_mutex);
-    //pthread_spin_unlock(&lock_list_spin);
-}
-
-void* request_simulation(void *en_delete){
-    ct_fl_t *node1;
-    int flag = *((int *) en_delete);
-
-    static uint16 seeds[3] = { 182, 757, 21 };
-    off_t start = nrand48(seeds) % (100 + 1);
-    size_t size = nrand48(seeds) % (50 + 1 - 1) + 1;
-    int rw_mode= nrand48(seeds) % (2 + 1);
-
-    node1 = ctfs_lock_list_add_node(10086, start, 20, rw_mode);
-    if(flag){
-        while(node1->fl_block != NULL){} //wait for blocker finshed
-        sleep(size / 100);  //simulate the reading latency(1/100 of the size)
-        ctfs_lock_list_remove_node(node1);
-    }
-    pthread_exit(NULL);
-}
-
-
-int main(int argc, char *argv[]) {
-    //********************settings**********************
-    static int nthread = 64; //number of threads
-    static int en_delete = TRUE; //enable the node deletion?
-    //**************************************************
-    if( argc == 3 ) {
-      nthread = atoi(argv[1]);
-      en_delete = atoi(argv[2]);
-   } else {
-       printf("Plese use the following format\n");
-       printf("lock_test #threads [0|1]\n");
-   }
-
-    pthread_spin_init(&lock_list_spin, 0);
-    pthread_t threads[nthread];
-    printf("********************** Transactions **********************\n");
-    for(int i = 0; i < nthread; i++){
-        pthread_create(&threads[i], NULL, request_simulation, &en_delete);
-    }
-
-    for(int i = 0; i < nthread; i++){
-        pthread_join(threads[i], NULL);
-    }
-
-    print_all_info();
-
-    pthread_spin_destroy(&lock_list_spin);
-
-    return 0;
-}
+#endif /* End _TIME_H_ */
