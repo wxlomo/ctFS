@@ -343,7 +343,7 @@ static inline ssize_t  ctfs_pwrite_normal(int fd, const void *buf, size_t count,
 #ifdef CTFS_DEBUG
 	timer_start();
 #endif
-	avx_cpy(addr_base + offset, buf, count);
+	memcpy(addr_base + offset, buf, count);
 #ifdef CTFS_DEBUG
 	ct_rt.fd[fd].cpy_time += timer_end();
 #endif
