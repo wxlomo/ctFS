@@ -10,7 +10,7 @@
 #ifndef CTFS_RLOCK_H
 #define CTFS_RLOCK_H
 
-#include "ctfs_format.h"
+#include "ctfs_runtime.h"
 
 /* block list and wait list segments */
 typedef struct ct_fl_seg{
@@ -36,10 +36,9 @@ typedef struct ct_fl_t{
 
 /* File lock frame */
 typedef struct ct_fl_frame{
-    ct_fl_t*           fl[CT_MAX_FD];	   // one list per opened file
-	uint8_t            fl_lock[CT_MAX_FD]; // one lock per list
+    ct_fl_t*           fl;	   // one list per opened file
+	uint8_t            fl_lock; // one lock per list
 }ct_fl_frame;
-ct_fl_frame ct_fl;
 
 /* range lock related functions */
 void      ctfs_rlock_init(int fd);                                          // initialization
