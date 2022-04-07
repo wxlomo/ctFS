@@ -172,7 +172,7 @@ int main(int argc, char ** argv){
 	int num_thread = atoi(argv[2]);
 	long long size = atoll(argv[3]);
 	int round = atoll(argv[4]);
-	int rnd_blk_size = 4096 * 1250;
+	int rnd_blk_size = 4096;
     long long *rnd_addrs;
     static uint16_t seeds[3] = { 182, 757, 21 };
 
