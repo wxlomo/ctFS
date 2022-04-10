@@ -1,6 +1,7 @@
 ctFS.code-workspace
 *.a
 *.o
+<<<<<<< Updated upstream
 *.so
 .vscode/settings.json
 .vscode/c_cpp_properties.json
@@ -17,4 +18,13 @@ ctFS.code-workspace
 *.db-wal
 >>>>>>> Stashed changes
 *.json
+=======
+*.code-workspace
+test/parallel
+test/fstest
+*.opendb
+*.db-shm
+*.db
+*.db-wal
+>>>>>>> Stashed changes
 *.sqlite
