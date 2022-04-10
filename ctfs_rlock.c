@@ -177,8 +177,8 @@ void ctfs_rlock_init(int fd){
     switch(fd){
         case 0: // all
             for (int i = 0; i < CT_MAX_FD; i++){
-                ct_fl.fl[fd] = NULL;
-                ct_fl.fl[fd] = 0;
+                ct_fl.fl[i] = NULL;
+                ct_fl.fl[i] = 0;
             }
             break;
         default:
