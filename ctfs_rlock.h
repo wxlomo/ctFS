@@ -43,7 +43,7 @@ ct_fl_frame ct_fl;
 
 /* range lock related functions */
 void      ctfs_rlock_init(int fd);                                          // initialization
-ct_fl_t*  ctfs_rlock_acquire(int fd, off_t offset, size_t count, int flag); // acquire a range lock, return the address of the lock
+ct_fl_t*  ctfs_rlock_acquire(int fd, off_t offset, size_t count, int flag); // acquire a range lock, return the pointer of the lock
 void      ctfs_rlock_release(int fd, ct_fl_t *node);                        // release the range lock
 
 #endif

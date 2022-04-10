@@ -187,7 +187,7 @@ void ctfs_rlock_init(int fd){
     }
 }
 
-/* acquire a range lock, return the address of the lock */
+/* acquire a range lock, return the pointer of the lock */
 ct_fl_t*  __attribute__((optimize("O0"))) ctfs_rlock_acquire(int fd, off_t offset, size_t count, int flag){
     ct_fl_t *node = ctfs_rlock_add_node(fd, offset, count, flag);
 	while(node->fl_block != NULL){} // wait for blocker finshed
